@@ -3,6 +3,26 @@ let rawRDAP = null;      // store full RDAP JSON for WHOIS
 let showingRaw = false;  // toggle state for raw WHOIS
 let lastDetected = "";   // last detected cipher type
 
+// ---------------- Speaker Icon Easter Egg ----------------
+const speakerIcon = document.getElementById('speaker-icon');
+const speakerAudio = document.getElementById('speaker-audio');
+
+if (speakerIcon && speakerAudio) {
+    speakerIcon.addEventListener('click', () => {
+        // Start bounce
+        speakerIcon.classList.add('bouncing');
+
+        // Play audio
+        speakerAudio.currentTime = 0;
+        speakerAudio.play();
+
+        // Stop bounce when audio ends
+        speakerAudio.onended = () => {
+            speakerIcon.classList.remove('bouncing');
+        };
+    });
+}
+
 // ---------------- WHOIS / RDAP ----------------
 async function whoisLookup() {
     showingRaw = false;
