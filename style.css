@@ -94,16 +94,18 @@ pre {
 }
 
 /* --- Speaker Icon --- */
-#speaker-container {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    width: 50px;
-    height: 50px;
-    cursor: pointer;
-    z-index: 9999;
+#speaker-icon {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;    /* This is the magic line for photos */
+    object-position: center; 
+    image-rendering: auto;
+    /* Reset everything else just in case */
+    filter: none !important;
+    opacity: 1 !important;
+    visibility: visible !important;
 }
-
 #speaker-icon {
     width: 100%;
     height: 100%;
