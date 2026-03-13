@@ -38,7 +38,6 @@ Registrar: ${registrar}
 Created: ${created}
 Expires: ${expires}
 Abuse Contact: ${abuseEmail}
-
 Nameservers:
 ${nameservers}`;
 
@@ -89,14 +88,18 @@ function toggleRaw() {
 async function ipLookup() {
     try {
         let ip = document.getElementById("ip").value.trim();
-        if (!ip) { document.getElementById("outputIP").innerText = "Enter a valid IP"; return; }
+        if (!ip) { 
+            document.getElementById("outputIP").innerText = "Enter a valid IP"; 
+            return; 
+        }
 
+        // Use AllOrigins proxy to avoid CORS issues
         let response = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent('https://ipapi.co/' + ip + '/json/')}`);
-let data = await response.json();
         if (!response.ok) throw new Error("IP lookup failed");
-        let data = await response.json();
 
+        let data = await response.json();
         document.getElementById("outputIP").innerText = JSON.stringify(data, null, 2);
+
     } catch (error) {
         console.error(error);
         document.getElementById("outputIP").innerText = "IP lookup failed.";
