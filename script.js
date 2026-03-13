@@ -91,7 +91,8 @@ async function ipLookup() {
         let ip = document.getElementById("ip").value.trim();
         if (!ip) { document.getElementById("outputIP").innerText = "Enter a valid IP"; return; }
 
-        let response = await fetch(`https://ipapi.co/${ip}/json/`);
+        let response = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent('https://ipapi.co/' + ip + '/json/')}`);
+let data = await response.json();
         if (!response.ok) throw new Error("IP lookup failed");
         let data = await response.json();
 
