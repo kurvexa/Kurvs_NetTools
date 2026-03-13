@@ -1,8 +1,16 @@
-ipwhois.app
-ip-api.com
-ipapi.co
-
-
-
 These are all IP providers used in the script.js file. 
 Each provider acts as a fallback for the others, ensuring the script can still return results even if one service is unavailable or rate‑limited.
+
+// 🟩 Working 🟩 // 
+ipapi.co (STATUS: Working)
+
+// 🟥 Not Working 🟥 //
+ipapi.is (STATUS: Not working)
+ipwhois.app (STATUS: Not working)
+freeipapi.com (STATUS: Not working)
+
+
+Last Updated: 15:33 PM (PST) 
+              3/13/2026
+
+
