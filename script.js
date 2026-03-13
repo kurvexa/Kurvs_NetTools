@@ -1,7 +1,7 @@
 // ---------------- Globals ----------------
-let rawRDAP = null;      // store full RDAP JSON for WHOIS
-let showingRaw = false;  // toggle state for raw WHOIS
-let lastDetected = "";   // last detected cipher type
+let rawRDAP = null;
+let showingRaw = false;
+let lastDetected = "";
 
 // ---------------- Speaker Icon Easter Egg ----------------
 const speakerIcon = document.getElementById('speaker-icon');
@@ -9,14 +9,12 @@ const speakerAudio = document.getElementById('speaker-audio');
 
 if (speakerIcon && speakerAudio) {
     speakerIcon.addEventListener('click', () => {
-        // Start bounce
+
         speakerIcon.classList.add('bouncing');
 
-        // Play audio
         speakerAudio.currentTime = 0;
         speakerAudio.play();
 
-        // Stop bounce when audio ends
         speakerAudio.onended = () => {
             speakerIcon.classList.remove('bouncing');
         };
@@ -25,11 +23,13 @@ if (speakerIcon && speakerAudio) {
 
 // ---------------- WHOIS / RDAP ----------------
 async function whoisLookup() {
+
     showingRaw = false;
     const toggleBtn = document.getElementById("toggleRawBtn");
     toggleBtn.innerText = "show raw data";
 
     try {
+
         let domain = document.getElementById("domain").value.trim();
         domain = domain.replace(/^https?:\/\//i, "").split("/")[0];
 
@@ -39,7 +39,7 @@ async function whoisLookup() {
         }
 
         let rdapResp = await fetch(`https://rdap.org/domain/${domain}`);
-        if (!rdapResp.ok) throw new Error("domain not found or unsupported TLD");
+        if (!rdapResp.ok) throw new Error("domain not found");
 
         let data = await rdapResp.json();
         rawRDAP = data;
@@ -48,6 +48,7 @@ async function whoisLookup() {
         let created = data.events?.find(e => e.eventAction === "registration")?.eventDate || "Unknown";
         let expires = data.events?.find(e => e.eventAction === "expiration")?.eventDate || "Unknown";
         let nameservers = data.nameservers?.map(ns => ns.ldhName).join("\n") || "None";
+
         let abuseEmail = findAbuseEmail(data.entities || []);
 
         const output =
@@ -64,15 +65,18 @@ ${nameservers}`;
         document.getElementById("outputWhois").innerText = output;
 
     } catch (error) {
-        console.error(error);
+
         document.getElementById("outputWhois").innerText =
-            "lookup failed. domain may be unregistered or RDAP server unavailable.";
+        "lookup failed. domain may be unregistered.";
     }
 }
 
 function findAbuseEmail(entities) {
+
     for (let entity of entities) {
+
         if (entity.roles && entity.roles.includes("abuse")) {
+
             let vcard = entity.vcardArray;
 
             if (vcard) {
@@ -92,29 +96,90 @@ function findAbuseEmail(entities) {
 }
 
 function toggleRaw() {
+
     if (!rawRDAP) return;
 
     const outputEl = document.getElementById("outputWhois");
     const btn = document.getElementById("toggleRawBtn");
 
     if (showingRaw) {
+
         whoisLookup();
         btn.innerText = "show raw data";
         showingRaw = false;
+
     } else {
+
         outputEl.innerText = JSON.stringify(rawRDAP, null, 2);
         btn.innerText = "show clean data";
         showingRaw = true;
     }
 }
 
-// ---------------- IP LOOKUP (MULTI PROVIDER FAILOVER) ----------------
+// ---------------- DNS LOOKUP ----------------
+
+async function dnsLookup() {
+
+    let domain = document.getElementById("dnsDomain").value.trim();
+    let output = document.getElementById("outputDNS");
+
+    domain = domain.replace(/^https?:\/\//i, "").split("/")[0];
+
+    if (!domain.includes(".")) {
+        output.innerText = "invalid domain.";
+        return;
+    }
+
+    const recordTypes = {
+        A:1,
+        AAAA:28,
+        MX:15,
+        NS:2,
+        TXT:16,
+        CNAME:5
+    };
+
+    let results = `DOMAIN: ${domain}\n\n`;
+
+    try {
+
+        for (const [name,type] of Object.entries(recordTypes)) {
+
+            let resp = await fetch(`https://dns.google/resolve?name=${domain}&type=${type}`);
+            let data = await resp.json();
+
+            if (data.Answer) {
+
+                results += `[${name}]\n`;
+
+                data.Answer.forEach(r=>{
+                    results += `${r.data}\n`;
+                });
+
+                results += "\n";
+            }
+        }
+
+        if (results === `DOMAIN: ${domain}\n\n`) {
+            results += "no DNS records found.";
+        }
+
+        output.innerText = results;
+
+    } catch(err) {
+
+        output.innerText = "DNS lookup failed.";
+    }
+}
+
+// ---------------- IP LOOKUP ----------------
 
 const ipProviders = [
+
 {
-    name: "ipwhois.app",
-    url: ip => `https://ipwhois.app/json/${ip}`,
-    parse: data => 
+name:"ipwhois.app",
+url: ip => `https://ipwhois.app/json/${ip}`,
+parse:data=>
 `IP: ${data.ip}
 
 Country: ${data.country}
@@ -130,9 +195,9 @@ ASN: ${data.asn}`
 },
 
 {
-    name: "ip-api.com",
-    url: ip => `http://ip-api.com/json/${ip}`,
-    parse: data => 
+name:"ip-api.com",
+url: ip => `http://ip-api.com/json/${ip}`,
+parse:data=>
 `IP: ${data.query}
 
 Country: ${data.country}
@@ -148,9 +213,9 @@ ASN: ${data.as}`
 },
 
 {
-    name: "ipapi.co",
-    url: ip => `https://ipapi.co/${ip}/json/`,
-    parse: data =>
+name:"ipapi.co",
+url: ip => `https://ipapi.co/${ip}/json/`,
+parse:data=>
 `IP: ${data.ip}
 
 Country: ${data.country_name}
@@ -162,206 +227,210 @@ Longitude: ${data.longitude}
 
 ISP: ${data.org}`
 }
+
 ];
 
 async function ipLookup() {
 
-    let ip = document.getElementById("ip").value.trim();
-    let output = document.getElementById("outputIP");
+let ip=document.getElementById("ip").value.trim();
+let output=document.getElementById("outputIP");
 
-    if (!ip) {
-        output.innerText = "enter a valid IP";
-        return;
-    }
+if(!ip){
+output.innerText="enter a valid IP";
+return;
+}
 
-    for (let i = 0; i < ipProviders.length; i++) {
+for(let provider of ipProviders){
 
-        let provider = ipProviders[i];
+try{
 
-        try {
+output.innerText=`Querying ${provider.name}...`;
 
-            output.innerText =
-`Querying provider: ${provider.name}...`;
+let response=await fetch(provider.url(ip));
 
-            let response = await fetch(provider.url(ip));
+if(response.status===429){
+throw new Error("RATE_LIMIT");
+}
 
-            if (response.status === 429) {
-                throw new Error("RATE_LIMIT");
-            }
+if(!response.ok){
+throw new Error("API_ERROR");
+}
 
-            if (!response.ok) {
-                throw new Error("API_ERROR");
-            }
+let data=await response.json();
 
-            let data = await response.json();
+output.innerText=provider.parse(data);
+return;
 
-            output.innerText = provider.parse(data);
-            return;
+}catch(err){
 
-        } catch (err) {
+output.innerText=`${provider.name} failed. trying another provider...`;
+await new Promise(r=>setTimeout(r,1200));
 
-            if (err.message === "RATE_LIMIT") {
+}
+}
 
-                output.innerText =
-` rate limit hit on ${provider.name}
-
-switching to next provider...`;
-
-            } else {
-
-                output.innerText =
-` ${provider.name} failed.
-
-trying another provider...`;
-            }
-
-            await new Promise(r => setTimeout(r, 1200));
-        }
-    }
-
-    output.innerText =
-` all IP lookup providers failed or rate limits were exceeded.
-
-try again later.`;
+output.innerText="all IP lookup providers failed.";
 }
 
 // ---------------- CIPHER DETECTION ----------------
-function detectCipher() {
-    const text = document.getElementById("cipher").value.trim();
-    const out = document.getElementById("outputCipher");
 
-    function isPrintable(str) {
-        return /^[\x09\x0A\x0D\x20-\x7E]*$/.test(str);
-    }
+function detectCipher(){
 
-    // ---------- BASE64 ----------
-    if (/^[A-Za-z0-9+/]+={0,2}$/.test(text) && text.length % 4 === 0) {
-        try {
-            const decoded = atob(text);
-            if (isPrintable(decoded)) {
-                lastDetected = "base64";
-                out.innerText = "base64 detected";
-                return;
-            }
-        } catch {}
-    }
+const text=document.getElementById("cipher").value.trim();
+const out=document.getElementById("outputCipher");
 
-    // ---------- HEX ----------
-    if (/^[0-9A-Fa-f]+$/.test(text) && text.length % 2 === 0) {
-        try {
-            let decoded = "";
-            for (let i = 0; i < text.length; i += 2) {
-                decoded += String.fromCharCode(parseInt(text.substr(i, 2), 16));
-            }
-            if (isPrintable(decoded)) {
-                lastDetected = "hex";
-                out.innerText = "hexadecimal detected";
-                return;
-            }
-        } catch {}
-    }
-
-    // ---------- URL ENCODING ----------
-    if (/%[0-9A-Fa-f]{2}/.test(text)) {
-        try {
-            const decoded = decodeURIComponent(text);
-            if (isPrintable(decoded)) {
-                lastDetected = "url";
-                out.innerText = "url encoding detected";
-                return;
-            }
-        } catch {}
-    }
-
-    // ---------- BINARY ----------
-    if (/^[01\s]+$/.test(text)) {
-        const parts = text.split(/\s+/).filter(Boolean);
-        if (parts.length > 0 && parts.every(b => b.length === 8)) {
-            try {
-                const decoded = parts
-                    .map(b => String.fromCharCode(parseInt(b, 2)))
-                    .join("");
-                if (isPrintable(decoded)) {
-                    lastDetected = "binary";
-                    out.innerText = "binary detected";
-                    return;
-                }
-            } catch {}
-        }
-    }
-
-    // ---------- ROT13 / CAESAR ----------
-    if (/^[A-Za-z]+$/.test(text)) {
-        lastDetected = "caesar";
-        out.innerText = "caesar/ROT13 detected";
-        return;
-    }
-
-    // ---------- UNKNOWN ----------
-    lastDetected = "unknown";
-    out.innerText = "cipher not recognized";
+function printable(str){
+return /^[\x09\x0A\x0D\x20-\x7E]*$/.test(str);
 }
 
-function decodeCipher() {
-    let text = document.getElementById("cipher").value.trim();
-    let result = "";
+if(/^[A-Za-z0-9+/]+={0,2}$/.test(text)&&text.length%4===0){
 
-    if (lastDetected === "base64") {
-        try {
-            result = atob(text);
-        } catch {
-            result = "invalid base64 string";
-        }
+try{
 
-    } else if (lastDetected === "hex") {
-        let str = "";
-        for (let i = 0; i < text.length; i += 2) {
-            str += String.fromCharCode(parseInt(text.substr(i, 2), 16));
-        }
-        result = str;
+let decoded=atob(text);
 
-    } else if (lastDetected === "binary") {
-        let str = "";
-        text.split(/\s+/).filter(Boolean).forEach(b => {
-            str += String.fromCharCode(parseInt(b, 2));
-        });
-        result = str;
+if(printable(decoded)){
+lastDetected="base64";
+out.innerText="base64 detected";
+return;
+}
 
-    } else if (lastDetected === "caesar") {
-        result = text.replace(/[A-Za-z]/g, c =>
-            String.fromCharCode(
-                c.charCodeAt(0) + (c.toUpperCase() <= 'M' ? 13 : -13)
-            )
-        );
+}catch{}
 
-    } else if (lastDetected === "url") {
-        try {
-            result = decodeURIComponent(text);
-        } catch {
-            result = "invalid url-encoded string";
-        }
+}
 
-    } else {
-        result = "unknown cipher";
-    }
+if(/^[0-9A-Fa-f]+$/.test(text)&&text.length%2===0){
 
-    document.getElementById("outputCipher").innerText = result;
+let decoded="";
+
+for(let i=0;i<text.length;i+=2){
+decoded+=String.fromCharCode(parseInt(text.substr(i,2),16));
+}
+
+if(printable(decoded)){
+lastDetected="hex";
+out.innerText="hex detected";
+return;
+}
+
+}
+
+if(/%[0-9A-Fa-f]{2}/.test(text)){
+
+try{
+
+let decoded=decodeURIComponent(text);
+
+if(printable(decoded)){
+lastDetected="url";
+out.innerText="url encoding detected";
+return;
+}
+
+}catch{}
+
+}
+
+if(/^[01\s]+$/.test(text)){
+
+let parts=text.split(/\s+/).filter(Boolean);
+
+if(parts.every(b=>b.length===8)){
+
+let decoded=parts.map(b=>String.fromCharCode(parseInt(b,2))).join("");
+
+if(printable(decoded)){
+lastDetected="binary";
+out.innerText="binary detected";
+return;
+}
+
+}
+
+}
+
+if(/^[A-Za-z]+$/.test(text)){
+
+lastDetected="caesar";
+out.innerText="caesar/rot13 detected";
+return;
+
+}
+
+lastDetected="unknown";
+out.innerText="cipher not recognized";
+}
+
+function decodeCipher(){
+
+let text=document.getElementById("cipher").value.trim();
+let result="";
+
+if(lastDetected==="base64"){
+
+try{
+result=atob(text);
+}catch{
+result="invalid base64";
+}
+
+}else if(lastDetected==="hex"){
+
+for(let i=0;i<text.length;i+=2){
+result+=String.fromCharCode(parseInt(text.substr(i,2),16));
+}
+
+}else if(lastDetected==="binary"){
+
+text.split(/\s+/).filter(Boolean).forEach(b=>{
+result+=String.fromCharCode(parseInt(b,2));
+});
+
+}else if(lastDetected==="caesar"){
+
+result=text.replace(/[A-Za-z]/g,c=>
+String.fromCharCode(c.charCodeAt(0)+(c.toUpperCase()<='M'?13:-13))
+);
+
+}else if(lastDetected==="url"){
+
+try{
+result=decodeURIComponent(text);
+}catch{
+result="invalid url encoding";
+}
+
+}else{
+
+result="unknown cipher";
+
+}
+
+document.getElementById("outputCipher").innerText=result;
 }
 
 // ---------------- IMAGE METADATA ----------------
-function imageMetadata() {
-    const input = document.getElementById("imageInput");
-    const file = input.files[0];
 
-    if (!file) return;
+function imageMetadata(){
 
-    EXIF.getData(file, function() {
-        const allMeta = EXIF.getAllTags(this);
+const input=document.getElementById("imageInput");
+const file=input.files[0];
 
-        if (allMeta.MakerNote && allMeta.MakerNote.length > 200) {
-            allMeta.MakerNote = "[MakerNote too long, truncated]";
-        }
+if(!file) return;
 
+EXIF.getData(file,function(){
+
+let allMeta=EXIF.getAllTags(this);
+
+if(allMeta.MakerNote&&allMeta.MakerNote.length>200){
+allMeta.MakerNote="[MakerNote truncated]";
+}
+
+document.getElementById("outputImage").innerText=
+JSON.stringify(allMeta,null,2);
+
+});
+}
         document.getElementById("outputImage").innerText =
             JSON.stringify(allMeta, null, 2);
     });
