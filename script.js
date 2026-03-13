@@ -92,39 +92,7 @@ async function ipLookup(){
 }
 
 // ---------------- CIPHER DETECTION ----------------
-function detectCipher(){
-    let text = document.getElementById("cipher").value.trim();
-
-    if(/^[A-F0-9]+$/i.test(text)){
-        lastDetected = "hex";
-        document.getElementById("outputCipher").innerText = "Hexadecimal detected";
-        return;
-    }
-    if(/^[01\s]+$/.test(text)){
-        lastDetected = "binary";
-        document.getElementById("outputCipher").innerText = "Binary detected";
-        return;
-    }
-    if(/^[A-Za-z0-9+/=]+$/.test(text)){
-        lastDetected = "base64";
-        document.getElementById("outputCipher").innerText = "Base64 detected";
-        return;
-    }
-    if(/^[A-Za-z]+$/.test(text)){
-        lastDetected = "rot13";
-        document.getElementById("outputCipher").innerText = "ROT13 detected";
-        return;
-    }
-    try {
-        decodeURIComponent(text);
-        lastDetected = "url";
-        document.getElementById("outputCipher").innerText = "URL encoding detected";
-        return;
-    } catch {}
-    
-    lastDetected = "unknown";
-    document.getElementById("outputCipher").innerText = "Cipher not recognized";
-}
+URL encoding detected
 
 // ---------------- CIPHER DECODING ----------------
 function decodeCipher(){
