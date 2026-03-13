@@ -227,32 +227,79 @@ try again later.`;
 
 // ---------------- CIPHER DETECTION ----------------
 function detectCipher() {
-    let text = document.getElementById("cipher").value.trim();
+    const text = document.getElementById("cipher").value.trim();
+    const out = document.getElementById("outputCipher");
 
-    if (/^[A-F0-9]+$/i.test(text)) {
-        lastDetected = "hex";
-        document.getElementById("outputCipher").innerText = "hexadecimal detected";
-
-    } else if (/^[01\s]+$/.test(text)) {
-        lastDetected = "binary";
-        document.getElementById("outputCipher").innerText = "binary detected";
-
-    } else if (/^[A-Za-z0-9+/=]+$/i.test(text)) {
-        lastDetected = "base64";
-        document.getElementById("outputCipher").innerText = "base64 detected";
-
-    } else if (/^[A-Za-z]+$/i.test(text)) {
-        lastDetected = "caesar";
-        document.getElementById("outputCipher").innerText = "caesar/ROT13 detected";
-
-    } else if (/%[0-9A-Fa-f]{2}/.test(text)) {
-        lastDetected = "url";
-        document.getElementById("outputCipher").innerText = "url encoding detected";
-
-    } else {
-        lastDetected = "unknown";
-        document.getElementById("outputCipher").innerText = "cipher not recognized";
+    function isPrintable(str) {
+        return /^[\x09\x0A\x0D\x20-\x7E]*$/.test(str);
     }
+
+    // ---------- BASE64 ----------
+    if (/^[A-Za-z0-9+/]+={0,2}$/.test(text) && text.length % 4 === 0) {
+        try {
+            const decoded = atob(text);
+            if (isPrintable(decoded)) {
+                lastDetected = "base64";
+                out.innerText = "base64 detected";
+                return;
+            }
+        } catch {}
+    }
+
+    // ---------- HEX ----------
+    if (/^[0-9A-Fa-f]+$/.test(text) && text.length % 2 === 0) {
+        try {
+            let decoded = "";
+            for (let i = 0; i < text.length; i += 2) {
+                decoded += String.fromCharCode(parseInt(text.substr(i, 2), 16));
+            }
+            if (isPrintable(decoded)) {
+                lastDetected = "hex";
+                out.innerText = "hexadecimal detected";
+                return;
+            }
+        } catch {}
+    }
+
+    // ---------- URL ENCODING ----------
+    if (/%[0-9A-Fa-f]{2}/.test(text)) {
+        try {
+            const decoded = decodeURIComponent(text);
+            if (isPrintable(decoded)) {
+                lastDetected = "url";
+                out.innerText = "url encoding detected";
+                return;
+            }
+        } catch {}
+    }
+
+    // ---------- BINARY ----------
+    if (/^[01\s]+$/.test(text)) {
+        const parts = text.split(/\s+/).filter(Boolean);
+        if (parts.length > 0 && parts.every(b => b.length === 8)) {
+            try {
+                const decoded = parts
+                    .map(b => String.fromCharCode(parseInt(b, 2)))
+                    .join("");
+                if (isPrintable(decoded)) {
+                    lastDetected = "binary";
+                    out.innerText = "binary detected";
+                    return;
+                }
+            } catch {}
+        }
+    }
+
+    // ---------- ROT13 / CAESAR ----------
+    if (/^[A-Za-z]+$/.test(text)) {
+        lastDetected = "caesar";
+        out.innerText = "caesar/ROT13 detected";
+        return;
+    }
+
+    // ---------- UNKNOWN ----------
+    lastDetected = "unknown";
+    out.innerText = "cipher not recognized";
 }
 
 function decodeCipher() {
@@ -275,7 +322,7 @@ function decodeCipher() {
 
     } else if (lastDetected === "binary") {
         let str = "";
-        text.split(" ").forEach(b => {
+        text.split(/\s+/).filter(Boolean).forEach(b => {
             str += String.fromCharCode(parseInt(b, 2));
         });
         result = str;
