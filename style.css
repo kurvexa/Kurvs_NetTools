@@ -1,7 +1,7 @@
 body {
-    background: #0f111a; /* Deep matte black/blue */
-    color: #e0e0e0;      /* Soft off-white for better readability */
-    font-family: 'Segoe UI', monospace; /* Cleaner font with mono backup */
+    background: #0f111a; 
+    color: #e0e0e0;      
+    font-family: 'Segoe UI', monospace; 
     padding: 40px;
     line-height: 1.6;
 }
@@ -14,9 +14,9 @@ h1 {
 }
 
 .tool {
-    background: #161b22; /* Slightly lighter than body for depth */
+    background: #161b22; 
     border: 1px solid #30363d;
-    border-radius: 8px;   /* Rounded corners look more modern */
+    border-radius: 8px;  
     padding: 25px;
     margin-bottom: 30px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.3);
@@ -24,7 +24,7 @@ h1 {
 
 h2 {
     margin-top: 0;
-    color: #58a6ff; /* A subtle blue accent for headers */
+    color: #58a6ff; 
 }
 
 input, textarea {
@@ -39,7 +39,7 @@ input, textarea {
 }
 
 input:focus, textarea:focus {
-    border-color: #58a6ff; /* Blue highlight on focus */
+    border-color: #58a6ff; /*if anybody sees this, im coding at 22:50 pm on 3/12/2026. HEEEELP ME I NEED COFFEEEE*/
 }
 
 textarea {
@@ -47,7 +47,7 @@ textarea {
 }
 
 button {
-    background: #f0f6fc; /* Light gray/white button */
+    background: #f0f6fc; 
     color: #1f2328;
     border: 1px solid rgba(27,31,36,0.15);
     border-radius: 6px;
@@ -94,7 +94,7 @@ pre {
 
 
 
-/* backup below incase need fast swap*/
+/*old version/old as backup below*/
 
 
 /* body{
