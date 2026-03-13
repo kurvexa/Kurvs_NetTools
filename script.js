@@ -1,5 +1,7 @@
 let lastDetected = "";
 
+let rawRDAP = null; // for later use - 3/12/2026 20:25 PM PST
+
 async function whoisLookup(){
 
 try{
@@ -12,12 +14,38 @@ let response = await fetch(
 
 let data = await response.json();
 
+rawRDAP = data;
+
 let registrar = data.entities?.[0]?.vcardArray?.[1]?.[1]?.[3] || "Unknown";
 
-let created = data.events.find(e => e.eventAction==="registration")?.eventDate;
-let expires = data.events.find(e => e.eventAction==="expiration")?.eventDate;
+let created = data.events.find(e => e.eventAction==="registration")?.eventDate || "Unknown";
+let expires = data.events.find(e => e.eventAction==="expiration")?.eventDate || "Unknown";
 
 let nameservers = data.nameservers.map(ns => ns.ldhName).join("\n");
+
+let abuseEmail = "Not listed";
+
+data.entities.forEach(entity => {
+
+if(entity.roles && entity.roles.includes("abuse")){
+
+let vcard = entity.vcardArray;
+
+if(vcard){
+
+vcard[1].forEach(field => {
+
+if(field[0] === "email"){
+abuseEmail = field[3];
+}
+
+});
+
+}
+
+}
+
+});
 
 document.getElementById("output").innerText =
 `Domain: ${data.ldhName}
@@ -27,6 +55,8 @@ Registrar: ${registrar}
 Created: ${created}
 Expires: ${expires}
 
+Abuse Contact: ${abuseEmail}
+
 Nameservers:
 ${nameservers}`;
 
@@ -35,12 +65,11 @@ ${nameservers}`;
 catch(error){
 
 document.getElementById("output").innerText =
-"WHOIS lookup failed.";
+"Lookup failed.";
 
 }
 
 }
-
 async function ipLookup(){
 
 try{
