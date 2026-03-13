@@ -1,6 +1,5 @@
+let rawRDAP = null; // for later use
 let lastDetected = "";
-
-let rawRDAP = null; // for later use - 3/12/2026 20:25 PM PST
 
 async function whoisLookup(){
 
@@ -19,33 +18,14 @@ rawRDAP = data;
 let registrar = data.entities?.[0]?.vcardArray?.[1]?.[1]?.[3] || "Unknown";
 
 let created = data.events.find(e => e.eventAction==="registration")?.eventDate || "Unknown";
+
 let expires = data.events.find(e => e.eventAction==="expiration")?.eventDate || "Unknown";
 
-let nameservers = data.nameservers.map(ns => ns.ldhName).join("\n");
+let nameservers = data.nameservers
+.map(ns => ns.ldhName)
+.join("\n");
 
-let abuseEmail = "Not listed";
-
-data.entities.forEach(entity => {
-
-if(entity.roles && entity.roles.includes("abuse")){
-
-let vcard = entity.vcardArray;
-
-if(vcard){
-
-vcard[1].forEach(field => {
-
-if(field[0] === "email"){
-abuseEmail = field[3];
-}
-
-});
-
-}
-
-}
-
-});
+let abuseEmail = findAbuseEmail(data.entities || []);
 
 document.getElementById("output").innerText =
 `Domain: ${data.ldhName}
@@ -70,6 +50,43 @@ document.getElementById("output").innerText =
 }
 
 }
+
+function findAbuseEmail(entities){
+
+for(let entity of entities){
+
+if(entity.roles && entity.roles.includes("abuse")){
+
+let vcard = entity.vcardArray;
+
+if(vcard){
+
+for(let field of vcard[1]){
+
+if(field[0] === "email"){
+return field[3];
+}
+
+}
+
+}
+
+}
+
+if(entity.entities){
+
+let result = findAbuseEmail(entity.entities);
+
+if(result) return result;
+
+}
+
+}
+
+return "Not listed";
+
+}
+
 async function ipLookup(){
 
 try{
@@ -133,7 +150,7 @@ return;
 
 }
 
-lastDetected="unknown";
+lastDetected = "unknown";
 
 document.getElementById("output").innerText =
 "Cipher not recognized";
@@ -144,17 +161,17 @@ function decodeCipher(){
 
 let text = document.getElementById("cipher").value.trim();
 
-let result="";
+let result = "";
 
-if(lastDetected=="base64"){
+if(lastDetected === "base64"){
 
 result = atob(text);
 
 }
 
-else if(lastDetected=="hex"){
+else if(lastDetected === "hex"){
 
-let str='';
+let str = "";
 
 for(let i=0;i<text.length;i+=2){
 
@@ -168,13 +185,13 @@ result = str;
 
 }
 
-else if(lastDetected=="binary"){
+else if(lastDetected === "binary"){
 
 let binary = text.split(" ");
 
-let str="";
+let str = "";
 
-binary.forEach(b=>{
+binary.forEach(b => {
 
 str += String.fromCharCode(parseInt(b,2));
 
@@ -186,10 +203,21 @@ result = str;
 
 else{
 
-result="Unknown cipher";
+result = "Unknown cipher";
 
 }
 
-document.getElementById("output").innerText=result;
+document.getElementById("output").innerText = result;
+
+}
+
+function showRaw(){
+
+if(rawRDAP){
+
+document.getElementById("output").innerText =
+JSON.stringify(rawRDAP,null,2);
+
+}
 
 }
