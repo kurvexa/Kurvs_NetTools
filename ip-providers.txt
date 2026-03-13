@@ -5,3 +5,4 @@ ipapi.co
 
 
 These are all IP providers used in the script.js file. 
+Each provider acts as a fallback for the others, ensuring the script can still return results even if one service is unavailable or rate‑limited.
