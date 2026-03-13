@@ -1,4 +1,24 @@
-let rawRDAP = null; // store full RDAP data
+let rawRDAP = null;   // full RDAP data
+let showingRaw = false; // state for toggle
+
+function toggleRaw() {
+    if (!rawRDAP) return; // nothing to show
+
+    const outputEl = document.getElementById("output");
+    const btn = document.getElementById("toggleRawBtn");
+
+    if (showingRaw) {
+        // switch back to clean summary
+        whoisLookup(); // call it again to show formatted output
+        btn.innerText = "Show Raw Data";
+        showingRaw = false;
+    } else {
+        // show raw JSON
+        outputEl.innerText = JSON.stringify(rawRDAP, null, 2);
+        btn.innerText = "Show Clean Data";
+        showingRaw = true;
+    }
+}
 let lastDetected = "";
 
 // ---------------- RDAP / WHOIS LOOKUP ----------------
