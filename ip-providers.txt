@@ -1,1 +1,7 @@
+ipwhois.app
+ip-api.com
+ipapi.co
 
+
+
+These are all IP providers used in the script.js file. 
