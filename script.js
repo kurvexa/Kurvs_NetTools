@@ -8,39 +8,39 @@ async function whoisLookup() {
     document.getElementById("toggleRawBtn").innerText = "Show Raw Data";
 
     try {
-        // 1️⃣ Get domain and clean input
         let domain = document.getElementById("domain").value.trim();
         domain = domain.replace(/^https?:\/\//i, "").split("/")[0]; // remove protocol & path
 
-        // 2️⃣ Validate basic domain format
+        // basic validation
         if (!/^[a-z0-9.-]+\.[a-z]{2,}$/i.test(domain)) {
             document.getElementById("outputWhois").innerText = "Invalid domain format.";
             return;
         }
 
-        // 3️⃣ Extract TLD
+        // extract TLD
         let domainParts = domain.split(".");
         let tld = domainParts[domainParts.length - 1].toLowerCase();
 
-        // 4️⃣ Fetch IANA RDAP bootstrap JSON
+        // fetch IANA bootstrap
         let bootstrapResp = await fetch("https://data.iana.org/rdap/dns.json");
         let bootstrap = await bootstrapResp.json();
 
-        // 5️⃣ Find RDAP server for this TLD
-        let server = bootstrap.tlds[tld]?.services?.[0]?.[0];
-        if (!server) {
-            document.getElementById("outputWhois").innerText = "No RDAP server found for this TLD.";
+        // check for TLD existence
+        let tldData = bootstrap.tlds[tld];
+        if (!tldData || !tldData.services || tldData.services.length === 0) {
+            document.getElementById("outputWhois").innerText =
+                `No RDAP server found for this TLD: .${tld}\nYou can still try IP lookup or other tools.`;
             return;
         }
 
-        // 6️⃣ Fetch domain info from RDAP server
+        let server = tldData.services[0][0];
         let rdapResp = await fetch(`${server}/domain/${domain}`);
         if (!rdapResp.ok) throw new Error("Domain not found or TLD unsupported");
         let data = await rdapResp.json();
 
         rawRDAP = data;
 
-        // 7️⃣ Extract useful info
+        // extract info
         let registrar = data.entities?.[0]?.vcardArray?.[1]?.[1]?.[3] || "Unknown";
         let created = data.events.find(e => e.eventAction === "registration")?.eventDate || "Unknown";
         let expires = data.events.find(e => e.eventAction === "expiration")?.eventDate || "Unknown";
@@ -93,12 +93,10 @@ function toggleRaw() {
     const btn = document.getElementById("toggleRawBtn");
 
     if (showingRaw) {
-        // switch back to clean summary
         whoisLookup();
         btn.innerText = "Show Raw Data";
         showingRaw = false;
     } else {
-        // show raw JSON
         outputEl.innerText = JSON.stringify(rawRDAP, null, 2);
         btn.innerText = "Show Clean Data";
         showingRaw = true;
@@ -162,38 +160,32 @@ function decodeCipher() {
         } catch {
             result = "Invalid Base64 string";
         }
-    }
-    else if (lastDetected === "hex") {
+    } else if (lastDetected === "hex") {
         let str = "";
         for (let i = 0; i < text.length; i += 2) {
             str += String.fromCharCode(parseInt(text.substr(i, 2), 16));
         }
         result = str;
-    }
-    else if (lastDetected === "binary") {
+    } else if (lastDetected === "binary") {
         let binary = text.split(" ");
         let str = "";
         binary.forEach(b => {
             str += String.fromCharCode(parseInt(b, 2));
         });
         result = str;
-    }
-    else if (lastDetected === "caesar") {
-        // ROT13 / simple Caesar
+    } else if (lastDetected === "caesar") {
         result = text.replace(/[A-Za-z]/g, c =>
             String.fromCharCode(
                 c.charCodeAt(0) + (c.toUpperCase() <= 'M' ? 13 : -13)
             )
         );
-    }
-    else if (lastDetected === "url") {
+    } else if (lastDetected === "url") {
         try {
             result = decodeURIComponent(text);
         } catch {
             result = "Invalid URL-encoded string";
         }
-    }
-    else {
+    } else {
         result = "Unknown cipher";
     }
 
