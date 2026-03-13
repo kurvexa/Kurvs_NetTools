@@ -9,7 +9,7 @@ body {
 
 /* --- Headings --- */
 h1 {
-    color: #A395A3;        /* might break somethn idk */ 
+    color: #BD7EBA;        /* might break somethn idk */ 
     border-bottom: 2px solid #30363d;
     padding-bottom: 10px;
     margin-bottom: 30px;
@@ -17,7 +17,7 @@ h1 {
 
 h2 {
     margin-top: 0;
-    color: #A395A3;           /* matches h1 accent */
+    color: #BD7EBA;           /* matches h1 accent */
 }
 
 /* --- Tool Boxes --- */
@@ -43,7 +43,7 @@ input, textarea {
 }
 
 input:focus, textarea:focus {
-    border-color: #A395A3;
+    border-color: #BD7EBA;
 }
 
 textarea {
@@ -53,7 +53,7 @@ textarea {
 /* --- Buttons --- */
 button {
     background-color: #21262d; /* dark button base */
-    color: #A395A3;
+    color: #BD7EBA;
     border: 1px solid #30363d;
     border-radius: 6px;
     padding: 10px 20px;
@@ -65,20 +65,20 @@ button {
 
 button:hover {
     background-color: #323a45; /* slightly lighter on hover */
-    box-shadow: 0 0 10px rgba(88,166,255,0.3);
+    box-shadow: 0 0 10px rgba(163,149,163,0.4);
 }
 
 /* --- Toggle Raw Button --- */
 #toggleRawBtn {
     background: transparent;
-    color: #A395A3;
-    border: 1px solid #A395A3;
+    color: #BD7EBA;
+    border: 1px solid #BD7EBA;
     margin-left: 10px;
 }
 
 #toggleRawBtn:hover {
-    color: #A395A3;
-    border-color: #A395A3;
+    color: #BD7EBA;
+    border-color: #BD7EBA;
 }
 
 /* --- Preformatted Blocks --- */
