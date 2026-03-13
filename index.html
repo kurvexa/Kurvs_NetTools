@@ -1,62 +1,41 @@
 <!DOCTYPE html>
 <html>
-
 <head>
-
-<title>Internet Toolkit</title>
-
-<link rel="stylesheet" href="style.css">
-
-<link rel="icon" href="data:,">
-
+    <title>Internet Toolkit</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="data:,">
 </head>
-
 <body>
 
 <h1>Internet Toolkit</h1>
 
-<div class="tool">
-
-<h2>WHOIS Lookup</h2>
-
-<input id="domain" placeholder="example.com">
-
-<button onclick="whoisLookup()">Search</button>
-
-</div>
 
 <div class="tool">
-
-<h2>IP Lookup</h2>
-
-<input id="ip" placeholder="8.8.8.8">
-
-<button onclick="ipLookup()">Search</button>
-
+    <h2>WHOIS Lookup</h2>
+    <input id="domain" placeholder="example.com">
+    <button onclick="whoisLookup()">Search</button>
+    <button id="toggleRawBtn" onclick="toggleRaw()">Show Raw Data</button>
+    <pre id="outputWhois"></pre>
 </div>
+
 
 <div class="tool">
-
-<h2>Cipher Detector</h2>
-
-<textarea id="cipher" placeholder="Paste encoded message"></textarea>
-
-<br><br>
-
-<button onclick="detectCipher()">Detect</button>
-
-<button onclick="decodeCipher()">Decode</button>
-
+    <h2>IP Lookup</h2>
+    <input id="ip" placeholder="8.8.8.8">
+    <button onclick="ipLookup()">Search</button>
+    <pre id="outputIP"></pre>
 </div>
 
-<h2>Output</h2>
 
-<pre id="output"></pre>
-<button id="toggleRawBtn" onclick="toggleRaw()" style="margin-top:10px; padding:5px 10px;">
-  Show Raw Data
-</button>
+<div class="tool">
+    <h2>Cipher Detector</h2>
+    <textarea id="cipher" placeholder="Paste encoded message"></textarea>
+    <br><br>
+    <button onclick="detectCipher()">Detect</button>
+    <button onclick="decodeCipher()">Decode</button>
+    <pre id="outputCipher"></pre>
+</div>
+
 <script src="script.js"></script>
-
 </body>
-
 </html>
