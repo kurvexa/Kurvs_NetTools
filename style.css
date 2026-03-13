@@ -1,4 +1,103 @@
-body{
+body {
+    background: #0f111a; /* Deep matte black/blue */
+    color: #e0e0e0;      /* Soft off-white for better readability */
+    font-family: 'Segoe UI', monospace; /* Cleaner font with mono backup */
+    padding: 40px;
+    line-height: 1.6;
+}
+
+h1 {
+    color: #ffffff;
+    border-bottom: 2px solid #30363d;
+    padding-bottom: 10px;
+    margin-bottom: 30px;
+}
+
+.tool {
+    background: #161b22; /* Slightly lighter than body for depth */
+    border: 1px solid #30363d;
+    border-radius: 8px;   /* Rounded corners look more modern */
+    padding: 25px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+h2 {
+    margin-top: 0;
+    color: #58a6ff; /* A subtle blue accent for headers */
+}
+
+input, textarea {
+    background: #0d1117;
+    color: #c9d1d9;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 12px;
+    width: 350px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+input:focus, textarea:focus {
+    border-color: #58a6ff; /* Blue highlight on focus */
+}
+
+textarea {
+    height: 120px;
+}
+
+button {
+    background: #f0f6fc; /* Light gray/white button */
+    color: #1f2328;
+    border: 1px solid rgba(27,31,36,0.15);
+    border-radius: 6px;
+    padding: 10px 20px;
+    margin-top: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+button:hover {
+    background: #ffffff;
+    box-shadow: 0 0 10px rgba(255,255,255,0.2);
+}
+
+#toggleRawBtn {
+    background: transparent;
+    color: #8b949e;
+    border: 1px solid #30363d;
+    margin-left: 10px;
+}
+
+#toggleRawBtn:hover {
+    color: #ffffff;
+    border-color: #8b949e;
+}
+
+pre {
+    background: #010409;
+    color: #d1d5db;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 15px;
+    white-space: pre-wrap;
+    font-size: 0.9em;
+    margin-top: 15px;
+}
+
+
+
+
+
+
+
+
+
+/* backup below incase need fast swap*/
+
+
+/* body{
 
 background:black;
 
@@ -79,3 +178,4 @@ padding:15px;
 white-space:pre-wrap;
 
 }
+*/
