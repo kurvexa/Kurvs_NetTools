@@ -86,96 +86,76 @@ pre {
     margin-top: 15px;
 }
 
+/* --- Speaker Icon Styles --- */
+#speaker-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 50px;
+    height: 50px;
+    cursor: pointer;
+    z-index: 9999;
+}
 
+#speaker-icon {
+    width: 100%;
+    height: 100%;
+    transition: transform 0.2s;
+    filter: invert(1); /* makes icon visible on dark background */
+}
 
+/* Bounce animation for when clicked */
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    25% { transform: translateY(-5px) rotate(-10deg); }
+    50% { transform: translateY(5px) rotate(10deg); }
+    75% { transform: translateY(-5px) rotate(-10deg); }
+}
 
-
-
-
-
+.bouncing {
+    animation: bounce 0.4s infinite;
+}
 
 /*old version/old as backup below*/
-
-
 /* body{
-
 background:black;
-
 color:#00ff88;
-
 font-family:monospace;
-
 padding:40px;
-
 }
-
 h1{
-
 color:#00ffaa;
-
 }
-
 .tool{
-
 border:1px solid #00ff88;
-
 padding:20px;
-
 margin-bottom:25px;
-
 }
-
 input, textarea{
-
 background:black;
-
 color:#00ff88;
-
 border:1px solid #00ff88;
-
 padding:10px;
-
 width:350px;
-
 }
-
 textarea{
-
 height:120px;
-
 }
-
 button{
-
 background:#00ff88;
-
 color:black;
-
 border:none;
-
 padding:10px 15px;
-
 margin-top:5px;
-
 cursor:pointer;
-
 }
-
 button:hover{
-
 background:#00ffaa;
-
 }
-
 pre{
-
 background:black;
-
 border:1px solid #00ff88;
-
 padding:15px;
-
 white-space:pre-wrap;
-
 }
 */
