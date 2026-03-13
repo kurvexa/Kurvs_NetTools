@@ -4,6 +4,9 @@
     <title>Internet Toolkit</title>
     <link rel="stylesheet" href="style.css">
     <link rel="icon" href="data:,">
+    <!-- Libraries for PDF export and EXIF reading -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/exif-js"></script>
 </head>
 <body>
 
@@ -15,6 +18,7 @@
     <input id="domain" placeholder="example.com">
     <button onclick="whoisLookup()">Search</button>
     <button id="toggleRawBtn" onclick="toggleRaw()">Show Raw Data</button>
+    <button onclick="exportPDF('outputWhois','WHOIS_Lookup')">Export PDF</button>
     <pre id="outputWhois"></pre>
 </div>
 
@@ -23,6 +27,7 @@
     <h2>IP Lookup</h2>
     <input id="ip" placeholder="8.8.8.8">
     <button onclick="ipLookup()">Search</button>
+    <button onclick="exportPDF('outputIP','IP_Lookup')">Export PDF</button>
     <pre id="outputIP"></pre>
 </div>
 
@@ -33,7 +38,16 @@
     <br><br>
     <button onclick="detectCipher()">Detect</button>
     <button onclick="decodeCipher()">Decode</button>
+    <button onclick="exportPDF('outputCipher','Cipher_Output')">Export PDF</button>
     <pre id="outputCipher"></pre>
+</div>
+
+<!-- Image Metadata Checker -->
+<div class="tool">
+    <h2>Image Metadata Checker</h2>
+    <input type="file" id="imageInput" onchange="imageMetadata()">
+    <button onclick="exportPDF('outputImage','Image_Metadata')">Export PDF</button>
+    <pre id="outputImage"></pre>
 </div>
 
 <script src="script.js"></script>
