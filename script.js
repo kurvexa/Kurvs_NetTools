@@ -1,3 +1,5 @@
+window.addEventListener("DOMContentLoaded", () => {
+
 // ---------------- Globals ----------------
 let rawRDAP = null;
 let showingRaw = false;
@@ -22,11 +24,11 @@ if (speakerIcon && speakerAudio) {
 }
 
 // ---------------- WHOIS / RDAP ----------------
-async function whoisLookup() {
+window.whoisLookup = async function() {
 
     showingRaw = false;
     const toggleBtn = document.getElementById("toggleRawBtn");
-    toggleBtn.innerText = "show raw data";
+    if(toggleBtn) toggleBtn.innerText = "show raw data";
 
     try {
 
@@ -95,7 +97,7 @@ function findAbuseEmail(entities) {
     return "Not listed";
 }
 
-function toggleRaw() {
+window.toggleRaw = function() {
 
     if (!rawRDAP) return;
 
@@ -118,7 +120,7 @@ function toggleRaw() {
 
 // ---------------- DNS LOOKUP ----------------
 
-async function dnsLookup() {
+window.dnsLookup = async function() {
 
     let domain = document.getElementById("dnsDomain").value.trim();
     let output = document.getElementById("outputDNS");
@@ -230,7 +232,7 @@ ISP: ${data.org}`
 
 ];
 
-async function ipLookup() {
+window.ipLookup = async function() {
 
 let ip=document.getElementById("ip").value.trim();
 let output=document.getElementById("outputIP");
@@ -274,7 +276,7 @@ output.innerText="all IP lookup providers failed.";
 
 // ---------------- CIPHER DETECTION ----------------
 
-function detectCipher(){
+window.detectCipher = function(){
 
 const text=document.getElementById("cipher").value.trim();
 const out=document.getElementById("outputCipher");
@@ -361,7 +363,7 @@ lastDetected="unknown";
 out.innerText="cipher not recognized";
 }
 
-function decodeCipher(){
+window.decodeCipher = function(){
 
 let text=document.getElementById("cipher").value.trim();
 let result="";
@@ -411,7 +413,7 @@ document.getElementById("outputCipher").innerText=result;
 
 // ---------------- IMAGE METADATA ----------------
 
-function imageMetadata(){
+window.imageMetadata = function(){
 
 const input=document.getElementById("imageInput");
 const file=input.files[0];
@@ -422,16 +424,14 @@ EXIF.getData(file,function(){
 
 let allMeta=EXIF.getAllTags(this);
 
-if(allMeta.MakerNote&&allMeta.MakerNote.length>200){
+if(allMeta.MakerNote && allMeta.MakerNote.length > 200){
 allMeta.MakerNote="[MakerNote truncated]";
 }
 
-document.getElementById("outputImage").innerText=
+document.getElementById("outputImage").innerText =
 JSON.stringify(allMeta,null,2);
 
 });
 }
-        document.getElementById("outputImage").innerText =
-            JSON.stringify(allMeta, null, 2);
-    });
-}
+
+});
