@@ -2,10 +2,37 @@ let lastDetected = "";
 
 async function whoisLookup(){
 
+try{
+
 let domain = document.getElementById("domain").value;
 
 let response = await fetch(
-"https://api.ipwhois.io/domain?domain=" + domain
+"https://api.allorigins.win/raw?url=https://api.hackertarget.com/whois/?q=" + domain
+);
+
+let data = await response.text();
+
+document.getElementById("output").innerText = data;
+
+}
+
+catch(error){
+
+document.getElementById("output").innerText =
+"WHOIS lookup failed.";
+
+}
+
+}
+
+async function ipLookup(){
+
+try{
+
+let ip = document.getElementById("ip").value;
+
+let response = await fetch(
+"https://ipapi.co/" + ip + "/json/"
 );
 
 let data = await response.json();
@@ -15,18 +42,12 @@ JSON.stringify(data,null,2);
 
 }
 
-async function ipLookup(){
-
-let ip = document.getElementById("ip").value;
-
-let response = await fetch(
-"http://ip-api.com/json/" + ip
-);
-
-let data = await response.json();
+catch(error){
 
 document.getElementById("output").innerText =
-JSON.stringify(data,null,2);
+"IP lookup failed.";
+
+}
 
 }
 
@@ -35,26 +56,42 @@ function detectCipher(){
 let text = document.getElementById("cipher").value.trim();
 
 if(/^[A-F0-9]+$/i.test(text)){
+
 lastDetected = "hex";
-document.getElementById("output").innerText="Hexadecimal detected";
+
+document.getElementById("output").innerText =
+"Hexadecimal detected";
+
 return;
+
 }
 
 if(/^[01\s]+$/.test(text)){
+
 lastDetected = "binary";
-document.getElementById("output").innerText="Binary detected";
+
+document.getElementById("output").innerText =
+"Binary detected";
+
 return;
+
 }
 
 if(/^[A-Za-z0-9+/=]+$/.test(text)){
+
 lastDetected = "base64";
-document.getElementById("output").innerText="Base64 detected";
+
+document.getElementById("output").innerText =
+"Base64 detected";
+
 return;
+
 }
 
 lastDetected="unknown";
 
-document.getElementById("output").innerText="Cipher not recognized";
+document.getElementById("output").innerText =
+"Cipher not recognized";
 
 }
 
@@ -93,7 +130,9 @@ let binary = text.split(" ");
 let str="";
 
 binary.forEach(b=>{
+
 str += String.fromCharCode(parseInt(b,2));
+
 });
 
 result = str;
