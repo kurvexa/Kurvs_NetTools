@@ -4,15 +4,16 @@ async function whoisLookup(){
 
 try{
 
-let domain = document.getElementById("domain").value;
+let domain = document.getElementById("domain").value.trim();
 
 let response = await fetch(
-"https://api.allorigins.win/raw?url=https://api.hackertarget.com/whois/?q=" + domain
+"https://rdap.org/domain/" + domain
 );
 
-let data = await response.text();
+let data = await response.json();
 
-document.getElementById("output").innerText = data;
+document.getElementById("output").innerText =
+JSON.stringify(data, null, 2);
 
 }
 
