@@ -108,7 +108,6 @@ pre {
     width: 100%;
     height: 100%;
     transition: transform 0.2s;
-    filter: brightness(0) invert(1);
 }
 
 /* --- Bounce Animation --- */
@@ -122,3 +121,6 @@ pre {
 .bouncing {
     animation: bounce 0.4s infinite;
 }
+
+/*testing fix for jaydes song player.*/
+/* filter: brightness(1) invert(1); */
