@@ -38,6 +38,7 @@ Registrar: ${registrar}
 Created: ${created}
 Expires: ${expires}
 Abuse Contact: ${abuseEmail}
+
 Nameservers:
 ${nameservers}`;
 
@@ -93,11 +94,15 @@ async function ipLookup() {
             return; 
         }
 
-        // Use AllOrigins proxy to avoid CORS issues
-        let response = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent('https://ipapi.co/' + ip + '/json/')}`);
+        // AllOrigins proxy to bypass CORS
+        let response = await fetch(
+            `https://api.allorigins.win/raw?url=${encodeURIComponent('https://ipapi.co/' + ip + '/json/')}`
+        );
         if (!response.ok) throw new Error("IP lookup failed");
 
-        let data = await response.json();
+        let text = await response.text();
+        let data = JSON.parse(text);
+
         document.getElementById("outputIP").innerText = JSON.stringify(data, null, 2);
 
     } catch (error) {
