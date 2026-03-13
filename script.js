@@ -3,21 +3,48 @@ let showingRaw = false; // for WHOIS toggle
 let lastDetected = ""; // for cipher detection
 
 // ---------------- WHOIS / RDAP ----------------
-async function whoisLookup(){
-    showingRaw = false; // reset toggle on new search
+async function whoisLookup() {
+    showingRaw = false; // reset toggle
     document.getElementById("toggleRawBtn").innerText = "Show Raw Data";
 
-    try{
+    try {
+        // 1️⃣ Get domain and clean input
         let domain = document.getElementById("domain").value.trim();
-        let response = await fetch("https://rdap.org/domain/" + domain);
-        let data = await response.json();
+        domain = domain.replace(/^https?:\/\//i, "").split("/")[0]; // remove protocol & path
+
+        // 2️⃣ Validate basic domain format
+        if (!/^[a-z0-9.-]+\.[a-z]{2,}$/i.test(domain)) {
+            document.getElementById("outputWhois").innerText = "Invalid domain format.";
+            return;
+        }
+
+        // 3️⃣ Extract TLD
+        let domainParts = domain.split(".");
+        let tld = domainParts[domainParts.length - 1].toLowerCase();
+
+        // 4️⃣ Fetch IANA RDAP bootstrap JSON
+        let bootstrapResp = await fetch("https://data.iana.org/rdap/dns.json");
+        let bootstrap = await bootstrapResp.json();
+
+        // 5️⃣ Find RDAP server for this TLD
+        let server = bootstrap.tlds[tld]?.services?.[0]?.[0];
+        if (!server) {
+            document.getElementById("outputWhois").innerText = "No RDAP server found for this TLD.";
+            return;
+        }
+
+        // 6️⃣ Fetch domain info from RDAP server
+        let rdapResp = await fetch(`${server}/domain/${domain}`);
+        if (!rdapResp.ok) throw new Error("Domain not found or TLD unsupported");
+        let data = await rdapResp.json();
 
         rawRDAP = data;
 
+        // 7️⃣ Extract useful info
         let registrar = data.entities?.[0]?.vcardArray?.[1]?.[1]?.[3] || "Unknown";
-        let created = data.events.find(e => e.eventAction==="registration")?.eventDate || "Unknown";
-        let expires = data.events.find(e => e.eventAction==="expiration")?.eventDate || "Unknown";
-        let nameservers = data.nameservers.map(ns => ns.ldhName).join("\n");
+        let created = data.events.find(e => e.eventAction === "registration")?.eventDate || "Unknown";
+        let expires = data.events.find(e => e.eventAction === "expiration")?.eventDate || "Unknown";
+        let nameservers = data.nameservers?.map(ns => ns.ldhName).join("\n") || "None";
         let abuseEmail = findAbuseEmail(data.entities || []);
 
         document.getElementById("outputWhois").innerText =
@@ -32,28 +59,28 @@ Abuse Contact: ${abuseEmail}
 
 Nameservers:
 ${nameservers}`;
-    }
-    catch(error){
-        document.getElementById("outputWhois").innerText = "Lookup failed.";
+
+    } catch (error) {
+        console.error(error);
+        document.getElementById("outputWhois").innerText =
+            "Lookup failed. This domain may not be registered or the TLD is unsupported.";
     }
 }
 
 // Recursive search for abuse emails
-function findAbuseEmail(entities){
-    for(let entity of entities){
-        if(entity.roles && entity.roles.includes("abuse")){
+function findAbuseEmail(entities) {
+    for (let entity of entities) {
+        if (entity.roles && entity.roles.includes("abuse")) {
             let vcard = entity.vcardArray;
-            if(vcard){
-                for(let field of vcard[1]){
-                    if(field[0] === "email"){
-                        return field[3];
-                    }
+            if (vcard) {
+                for (let field of vcard[1]) {
+                    if (field[0] === "email") return field[3];
                 }
             }
         }
-        if(entity.entities){
+        if (entity.entities) {
             let result = findAbuseEmail(entity.entities);
-            if(result) return result;
+            if (result) return result;
         }
     }
     return "Not listed";
@@ -79,43 +106,42 @@ function toggleRaw() {
 }
 
 // ---------------- IP LOOKUP ----------------
-async function ipLookup(){
-    try{
+async function ipLookup() {
+    try {
         let ip = document.getElementById("ip").value;
         let response = await fetch("https://ipapi.co/" + ip + "/json/");
         let data = await response.json();
-        document.getElementById("outputIP").innerText = JSON.stringify(data,null,2);
-    }
-    catch(error){
+        document.getElementById("outputIP").innerText = JSON.stringify(data, null, 2);
+    } catch (error) {
         document.getElementById("outputIP").innerText = "IP lookup failed.";
     }
 }
 
 // ---------------- CIPHER DETECTION ----------------
-function detectCipher(){
+function detectCipher() {
     let text = document.getElementById("cipher").value.trim();
 
-    if(/^[A-F0-9]+$/i.test(text)){
+    if (/^[A-F0-9]+$/i.test(text)) {
         lastDetected = "hex";
         document.getElementById("outputCipher").innerText = "Hexadecimal detected";
         return;
     }
-    if(/^[01\s]+$/.test(text)){
+    if (/^[01\s]+$/.test(text)) {
         lastDetected = "binary";
         document.getElementById("outputCipher").innerText = "Binary detected";
         return;
     }
-    if(/^[A-Za-z0-9+/=]+$/.test(text)){
+    if (/^[A-Za-z0-9+/=]+$/.test(text)) {
         lastDetected = "base64";
         document.getElementById("outputCipher").innerText = "Base64 detected";
         return;
     }
-    if(/^[A-Za-z]+$/.test(text)){
+    if (/^[A-Za-z]+$/.test(text)) {
         lastDetected = "caesar";
         document.getElementById("outputCipher").innerText = "Caesar/ROT13 detected";
         return;
     }
-    if(/%[0-9A-Fa-f]{2}/.test(text)){
+    if (/%[0-9A-Fa-f]{2}/.test(text)) {
         lastDetected = "url";
         document.getElementById("outputCipher").innerText = "URL encoding detected";
         return;
@@ -126,34 +152,33 @@ function detectCipher(){
 }
 
 // ---------------- CIPHER DECODING ----------------
-function decodeCipher(){
+function decodeCipher() {
     let text = document.getElementById("cipher").value.trim();
     let result = "";
 
-    if(lastDetected === "base64"){
-        try{
+    if (lastDetected === "base64") {
+        try {
             result = atob(text);
-        }
-        catch{
+        } catch {
             result = "Invalid Base64 string";
         }
     }
-    else if(lastDetected === "hex"){
+    else if (lastDetected === "hex") {
         let str = "";
-        for(let i=0;i<text.length;i+=2){
-            str += String.fromCharCode(parseInt(text.substr(i,2),16));
+        for (let i = 0; i < text.length; i += 2) {
+            str += String.fromCharCode(parseInt(text.substr(i, 2), 16));
         }
         result = str;
     }
-    else if(lastDetected === "binary"){
+    else if (lastDetected === "binary") {
         let binary = text.split(" ");
         let str = "";
         binary.forEach(b => {
-            str += String.fromCharCode(parseInt(b,2));
+            str += String.fromCharCode(parseInt(b, 2));
         });
         result = str;
     }
-    else if(lastDetected === "caesar"){
+    else if (lastDetected === "caesar") {
         // ROT13 / simple Caesar
         result = text.replace(/[A-Za-z]/g, c =>
             String.fromCharCode(
@@ -161,14 +186,14 @@ function decodeCipher(){
             )
         );
     }
-    else if(lastDetected === "url"){
-        try{
+    else if (lastDetected === "url") {
+        try {
             result = decodeURIComponent(text);
         } catch {
             result = "Invalid URL-encoded string";
         }
     }
-    else{
+    else {
         result = "Unknown cipher";
     }
 
