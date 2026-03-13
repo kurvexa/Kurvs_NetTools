@@ -92,7 +92,38 @@ async function ipLookup(){
 }
 
 // ---------------- CIPHER DETECTION ----------------
-URL encoding detected
+function detectCipher(){
+    let text = document.getElementById("cipher").value.trim();
+
+    if(/^[A-F0-9]+$/i.test(text)){
+        lastDetected = "hex";
+        document.getElementById("outputCipher").innerText = "Hexadecimal detected";
+        return;
+    }
+    if(/^[01\s]+$/.test(text)){
+        lastDetected = "binary";
+        document.getElementById("outputCipher").innerText = "Binary detected";
+        return;
+    }
+    if(/^[A-Za-z0-9+/=]+$/.test(text)){
+        lastDetected = "base64";
+        document.getElementById("outputCipher").innerText = "Base64 detected";
+        return;
+    }
+    if(/^[A-Za-z]+$/.test(text)){
+        lastDetected = "caesar";
+        document.getElementById("outputCipher").innerText = "Caesar/ROT13 detected";
+        return;
+    }
+    if(/%[0-9A-Fa-f]{2}/.test(text)){
+        lastDetected = "url";
+        document.getElementById("outputCipher").innerText = "URL encoding detected";
+        return;
+    }
+
+    lastDetected = "unknown";
+    document.getElementById("outputCipher").innerText = "Cipher not recognized";
+}
 
 // ---------------- CIPHER DECODING ----------------
 function decodeCipher(){
@@ -122,7 +153,8 @@ function decodeCipher(){
         });
         result = str;
     }
-    else if(lastDetected === "rot13"){
+    else if(lastDetected === "caesar"){
+        // ROT13 / simple Caesar
         result = text.replace(/[A-Za-z]/g, c =>
             String.fromCharCode(
                 c.charCodeAt(0) + (c.toUpperCase() <= 'M' ? 13 : -13)
