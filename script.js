@@ -161,23 +161,17 @@ function decodeCipher() {
 }
 
 // ---------------- IMAGE METADATA ----------------
-async function imageMetadata() {
+function imageMetadata() {
     const input = document.getElementById("imageInput");
     const file = input.files[0];
     if (!file) return;
 
     EXIF.getData(file, function() {
         const allMeta = EXIF.getAllTags(this);
+        // Truncate MakerNote if too long
+        if (allMeta.MakerNote && allMeta.MakerNote.length > 200) {
+            allMeta.MakerNote = "[MakerNote too long, truncated]";
+        }
         document.getElementById("outputImage").innerText = JSON.stringify(allMeta, null, 2);
     });
-}
-
-// ---------------- PDF EXPORT ----------------
-function exportPDF(outputId, title) {
-    const doc = new jsPDF();
-    const content = document.getElementById(outputId).innerText;
-    const lines = doc.splitTextToSize(content, 180); // wrap text
-    doc.text(title || "Export", 10, 10);
-    doc.text(lines, 10, 20);
-    doc.save(`${title || "output"}.pdf`);
 }
