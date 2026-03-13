@@ -2,8 +2,13 @@
 <html>
 
 <head>
+
 <title>Internet Toolkit</title>
+
 <link rel="stylesheet" href="style.css">
+
+<link rel="icon" href="data:,">
+
 </head>
 
 <body>
@@ -11,32 +16,45 @@
 <h1>Internet Toolkit</h1>
 
 <div class="tool">
+
 <h2>WHOIS Lookup</h2>
+
 <input id="domain" placeholder="example.com">
+
 <button onclick="whoisLookup()">Search</button>
+
 </div>
 
 <div class="tool">
+
 <h2>IP Lookup</h2>
+
 <input id="ip" placeholder="8.8.8.8">
+
 <button onclick="ipLookup()">Search</button>
+
 </div>
 
 <div class="tool">
+
 <h2>Cipher Detector</h2>
+
 <textarea id="cipher" placeholder="Paste encoded message"></textarea>
 
 <br><br>
 
 <button onclick="detectCipher()">Detect</button>
+
 <button onclick="decodeCipher()">Decode</button>
 
 </div>
 
 <h2>Output</h2>
+
 <pre id="output"></pre>
 
 <script src="script.js"></script>
 
 </body>
+
 </html>
