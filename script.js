@@ -165,7 +165,18 @@ let result = "";
 
 if(lastDetected === "base64"){
 
+try{
+
 result = atob(text);
+
+}
+catch{
+
+result = "Invalid Base64 string";
+
+}
+
+}
 
 }
 
@@ -221,3 +232,4 @@ JSON.stringify(rawRDAP,null,2);
 }
 
 }
+
