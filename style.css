@@ -1,1 +1,57 @@
+body{
+background:black;
+color:#00ff88;
+font-family:monospace;
+padding:40px;
+}
 
+h1{
+color:#00ffaa;
+}
+
+.tool{
+border:1px solid #00ff88;
+padding:20px;
+margin-bottom:25px;
+}
+
+input, textarea{
+
+background:black;
+color:#00ff88;
+
+border:1px solid #00ff88;
+
+padding:10px;
+width:350px;
+
+}
+
+textarea{
+height:120px;
+}
+
+button{
+
+background:#00ff88;
+color:black;
+
+border:none;
+
+padding:10px 15px;
+
+margin-top:5px;
+
+cursor:pointer;
+
+}
+
+button:hover{
+background:#00ffaa;
+}
+
+pre{
+background:black;
+border:1px solid #00ff88;
+padding:15px;
+}
