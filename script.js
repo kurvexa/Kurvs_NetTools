@@ -92,7 +92,7 @@ async function ipLookup() {
         }
 
         let response = await fetch(
-            `https://api.allorigins.win/raw?url=${encodeURIComponent('https://ipapi.co/' + ip + '/json/')}`
+            `https://api.ipapi.co`
         );
         if (!response.ok) throw new Error("IP lookup failed");
 
