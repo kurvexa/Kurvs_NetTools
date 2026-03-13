@@ -1,34 +1,38 @@
+/* --- Body --- */
 body {
-    background: #0d1117; /* restored dark background */
-    color: #e0e0e0;      
-    font-family: 'Segoe UI', monospace; 
+    background-color: #0d1117; /* dark background */
+    color: #c9d1d9;           /* readable light text */
+    font-family: 'Segoe UI', monospace;
     padding: 40px;
     line-height: 1.6;
-} 
+}
 
+/* --- Headings --- */
 h1 {
-    color: #0d1117;
+    color: #58a6ff;           /* vibrant for contrast */
     border-bottom: 2px solid #30363d;
     padding-bottom: 10px;
     margin-bottom: 30px;
 }
 
+h2 {
+    margin-top: 0;
+    color: #58a6ff;           /* matches h1 accent */
+}
+
+/* --- Tool Boxes --- */
 .tool {
-    background: #161b22; 
+    background-color: #161b22;
     border: 1px solid #30363d;
-    border-radius: 8px;  
+    border-radius: 8px;
     padding: 25px;
     margin-bottom: 30px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
 
-h2 {
-    margin-top: 0;
-    color: #58a6ff; 
-}
-
+/* --- Inputs & Textareas --- */
 input, textarea {
-    background: #0d1117;
+    background-color: #0d1117;
     color: #c9d1d9;
     border: 1px solid #30363d;
     border-radius: 6px;
@@ -46,23 +50,25 @@ textarea {
     height: 120px;
 }
 
+/* --- Buttons --- */
 button {
-    background: #f0f6fc; 
-    color: #1f2328;
-    border: 1px solid rgba(27,31,36,0.15);
+    background-color: #21262d; /* dark button base */
+    color: #c9d1d9;
+    border: 1px solid #30363d;
     border-radius: 6px;
     padding: 10px 20px;
     margin-top: 10px;
     font-weight: 600;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: background 0.2s, box-shadow 0.2s;
 }
 
 button:hover {
-    background: #ffffff;
-    box-shadow: 0 0 10px rgba(255,255,255,0.2);
+    background-color: #323a45; /* slightly lighter on hover */
+    box-shadow: 0 0 10px rgba(88,166,255,0.3);
 }
 
+/* --- Toggle Raw Button --- */
 #toggleRawBtn {
     background: transparent;
     color: #8b949e;
@@ -71,12 +77,13 @@ button:hover {
 }
 
 #toggleRawBtn:hover {
-    color: #ffffff;
-    border-color: #8b949e;
+    color: #58a6ff;
+    border-color: #58a6ff;
 }
 
+/* --- Preformatted Blocks --- */
 pre {
-    background: #010409;
+    background-color: #010409;
     color: #d1d5db;
     border: 1px solid #30363d;
     border-radius: 6px;
@@ -86,7 +93,7 @@ pre {
     margin-top: 15px;
 }
 
-/* --- Speaker Icon Styles --- */
+/* --- Speaker Icon --- */
 #speaker-container {
     position: fixed;
     top: 20px;
@@ -101,11 +108,10 @@ pre {
     width: 100%;
     height: 100%;
     transition: transform 0.2s;
-    /* visible on dark background */
-    filter: brightness(0) invert(1); 
+    filter: brightness(0) invert(1);
 }
 
-/* Bounce animation for when clicked */
+/* --- Bounce Animation --- */
 @keyframes bounce {
     0%, 100% { transform: translateY(0); }
     25% { transform: translateY(-5px) rotate(-10deg); }
@@ -116,4 +122,3 @@ pre {
 .bouncing {
     animation: bounce 0.4s infinite;
 }
-
