@@ -18,20 +18,18 @@ async function whoisLookup() {
             return;
         }
 
-        // Fetch from universal RDAP proxy
         let rdapResp = await fetch(`https://rdap.org/domain/${domain}`);
         if (!rdapResp.ok) throw new Error("Domain not found or unsupported TLD");
         let data = await rdapResp.json();
         rawRDAP = data;
 
-        // Extract registrar, dates, nameservers
         let registrar = data.entities?.[0]?.vcardArray?.[1]?.[1]?.[3] || "Unknown";
         let created = data.events?.find(e => e.eventAction === "registration")?.eventDate || "Unknown";
         let expires = data.events?.find(e => e.eventAction === "expiration")?.eventDate || "Unknown";
         let nameservers = data.nameservers?.map(ns => ns.ldhName).join("\n") || "None";
         let abuseEmail = findAbuseEmail(data.entities || []);
 
-        document.getElementById("outputWhois").innerText =
+        const output = 
 `Domain: ${data.ldhName}
 
 Registrar: ${registrar}
@@ -42,6 +40,7 @@ Abuse Contact: ${abuseEmail}
 Nameservers:
 ${nameservers}`;
 
+        document.getElementById("outputWhois").innerText = output;
     } catch (error) {
         console.error(error);
         document.getElementById("outputWhois").innerText =
@@ -49,7 +48,6 @@ ${nameservers}`;
     }
 }
 
-// Recursive abuse email extraction
 function findAbuseEmail(entities) {
     for (let entity of entities) {
         if (entity.roles && entity.roles.includes("abuse")) {
@@ -68,7 +66,6 @@ function findAbuseEmail(entities) {
     return "Not listed";
 }
 
-// Toggle raw / clean WHOIS display
 function toggleRaw() {
     if (!rawRDAP) return;
     const outputEl = document.getElementById("outputWhois");
@@ -94,7 +91,6 @@ async function ipLookup() {
             return; 
         }
 
-        // AllOrigins proxy to bypass CORS
         let response = await fetch(
             `https://api.allorigins.win/raw?url=${encodeURIComponent('https://ipapi.co/' + ip + '/json/')}`
         );
@@ -104,7 +100,6 @@ async function ipLookup() {
         let data = JSON.parse(text);
 
         document.getElementById("outputIP").innerText = JSON.stringify(data, null, 2);
-
     } catch (error) {
         console.error(error);
         document.getElementById("outputIP").innerText = "IP lookup failed.";
@@ -136,7 +131,6 @@ function detectCipher() {
     }
 }
 
-// ---------------- CIPHER DECODING ----------------
 function decodeCipher() {
     let text = document.getElementById("cipher").value.trim();
     let result = "";
@@ -164,4 +158,26 @@ function decodeCipher() {
     }
 
     document.getElementById("outputCipher").innerText = result;
+}
+
+// ---------------- IMAGE METADATA ----------------
+async function imageMetadata() {
+    const input = document.getElementById("imageInput");
+    const file = input.files[0];
+    if (!file) return;
+
+    EXIF.getData(file, function() {
+        const allMeta = EXIF.getAllTags(this);
+        document.getElementById("outputImage").innerText = JSON.stringify(allMeta, null, 2);
+    });
+}
+
+// ---------------- PDF EXPORT ----------------
+function exportPDF(outputId, title) {
+    const doc = new jsPDF();
+    const content = document.getElementById(outputId).innerText;
+    const lines = doc.splitTextToSize(content, 180); // wrap text
+    doc.text(title || "Export", 10, 10);
+    doc.text(lines, 10, 20);
+    doc.save(`${title || "output"}.pdf`);
 }
