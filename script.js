@@ -12,8 +12,23 @@ let response = await fetch(
 
 let data = await response.json();
 
+let registrar = data.entities?.[0]?.vcardArray?.[1]?.[1]?.[3] || "Unknown";
+
+let created = data.events.find(e => e.eventAction==="registration")?.eventDate;
+let expires = data.events.find(e => e.eventAction==="expiration")?.eventDate;
+
+let nameservers = data.nameservers.map(ns => ns.ldhName).join("\n");
+
 document.getElementById("output").innerText =
-JSON.stringify(data, null, 2);
+`Domain: ${data.ldhName}
+
+Registrar: ${registrar}
+
+Created: ${created}
+Expires: ${expires}
+
+Nameservers:
+${nameservers}`;
 
 }
 
