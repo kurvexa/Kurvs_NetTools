@@ -1,7 +1,7 @@
 # Kurvs_NetTools
 
 An OSINT multi-tool website, made for personal use.
-I doubt you'll find good use for this, as this is low quality to most standards. 
-Made fit with my needs in mind, and no - won't change anything in this repository because you don't like it.
+I doubt you'll find extremely good use for this, as this is low quality to most average standards.
+I made this with my preferences in mind, so please give your own advice.
 
 
