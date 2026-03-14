@@ -301,7 +301,7 @@ window.detectCipher = function(){
 
     if(/^[A-Za-z]+$/.test(text)){
         lastDetected = "caesar";
-        out.innerText = "caesar/rot13 detected";
+        out.innerText = "caesar/rot13 detected"; // need to fix. doesnt work - don't know why
         return;
     }
 
