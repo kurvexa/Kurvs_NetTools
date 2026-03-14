@@ -1,11 +1,5 @@
-window.addEventListener("DOMContentLoaded", () => {
+// ---------------- LANGUAGE SYSTEM ----------------
 
-// ---------------- Globals ----------------
-let rawRDAP = null;
-let showingRaw = false;
-let lastDetected = "";
-
-// ---------------- Translation System ----------------
 function setLanguage(lang){
 
 document.querySelectorAll("[data-i18n]").forEach(el=>{
@@ -26,11 +20,20 @@ localStorage.setItem("language", lang);
 
 }
 
-window.setLanguage = setLanguage;
+// ---------------- MAIN APP ----------------
 
+window.addEventListener("DOMContentLoaded", () => {
+
+// ---------------- Globals ----------------
+let rawRDAP = null;
+let showingRaw = false;
+let lastDetected = "";
+
+// ---------------- Load Saved Language ----------------
 const savedLang = localStorage.getItem("language") || "en";
 
 const langSelect = document.getElementById("languageSelect");
+
 if(langSelect){
 langSelect.value = savedLang;
 }
@@ -42,6 +45,7 @@ const speakerIcon = document.getElementById('speaker-icon');
 const speakerAudio = document.getElementById('speaker-audio');
 
 if (speakerIcon && speakerAudio) {
+
 speakerIcon.addEventListener('click', () => {
 
 speakerIcon.classList.add('bouncing');
@@ -54,6 +58,7 @@ speakerIcon.classList.remove('bouncing');
 };
 
 });
+
 }
 
 // ---------------- WHOIS / RDAP ----------------
@@ -159,12 +164,12 @@ return "Not listed";
 
 }
 
+// ---------------- Toggle Raw RDAP ----------------
 window.toggleRaw = function() {
 
 if (!rawRDAP) return;
 
 const outputEl = document.getElementById("outputWhois");
-
 const btn = document.getElementById("toggleRawBtn");
 
 if (showingRaw) {
@@ -172,7 +177,6 @@ if (showingRaw) {
 whoisLookup();
 
 btn.innerText = "show raw data";
-
 showingRaw = false;
 
 }
@@ -180,9 +184,7 @@ showingRaw = false;
 else {
 
 outputEl.innerText = JSON.stringify(rawRDAP, null, 2);
-
 btn.innerText = "show clean data";
-
 showingRaw = true;
 
 }
@@ -193,7 +195,6 @@ showingRaw = true;
 window.dnsLookup = async function() {
 
 let domain = document.getElementById("dnsDomain").value.trim();
-
 let output = document.getElementById("outputDNS");
 
 domain = domain.replace(/^https?:\/\//i, "").split("/")[0];
@@ -201,7 +202,6 @@ domain = domain.replace(/^https?:\/\//i, "").split("/")[0];
 if (!domain.includes(".")) {
 
 output.innerText = "invalid domain.";
-
 return;
 
 }
@@ -232,9 +232,7 @@ if (data.Answer) {
 results += `[${name}]\n`;
 
 data.Answer.forEach(r=>{
-
 results += `${r.data}\n`;
-
 });
 
 results += "\n";
@@ -344,16 +342,15 @@ ISP: ${data.org}`
 
 ];
 
+// ---------------- IP Lookup ----------------
 window.ipLookup = async function() {
 
 let ip = document.getElementById("ip").value.trim();
-
 let output = document.getElementById("outputIP");
 
 if(!ip){
 
 output.innerText = "enter a valid IP";
-
 return;
 
 }
@@ -367,7 +364,6 @@ output.innerText = `Querying ${provider.name}...`;
 let response = await fetch(provider.url(ip));
 
 if(response.status === 429) throw new Error("RATE_LIMIT");
-
 if(!response.ok) throw new Error("API_ERROR");
 
 let data = await response.json();
@@ -380,9 +376,10 @@ return;
 
 catch(err) {
 
-output.innerText = `${provider.name} failed. trying another provider...`;
+output.innerText =
+`${provider.name} failed. trying another provider...`;
 
-await new Promise(r => setTimeout(r, 1200));
+await new Promise(r => setTimeout(r,1200));
 
 }
 
@@ -396,29 +393,21 @@ output.innerText = "all IP lookup providers failed.";
 window.detectCipher = function(){
 
 const text = document.getElementById("cipher").value.trim();
-
 const out = document.getElementById("outputCipher");
 
 function printable(str){
-
 return /^[\x09\x0A\x0D\x20-\x7E]*$/.test(str);
-
 }
 
 if(/^[A-Za-z0-9+/]+={0,2}$/.test(text) && text.length % 4 === 0){
 
 try{
-
 let decoded = atob(text);
 
 if(printable(decoded)){
-
 lastDetected = "base64";
-
 out.innerText = "base64 detected";
-
 return;
-
 }
 
 }catch{}
@@ -430,19 +419,13 @@ if(/^[0-9A-Fa-f]+$/.test(text) && text.length % 2 === 0){
 let decoded = "";
 
 for(let i=0;i<text.length;i+=2){
-
 decoded += String.fromCharCode(parseInt(text.substr(i,2),16));
-
 }
 
 if(printable(decoded)){
-
 lastDetected = "hex";
-
 out.innerText = "hex detected";
-
 return;
-
 }
 
 }
@@ -450,17 +433,12 @@ return;
 if(/%[0-9A-Fa-f]{2}/.test(text)){
 
 try{
-
 let decoded = decodeURIComponent(text);
 
 if(printable(decoded)){
-
 lastDetected = "url";
-
 out.innerText = "url encoding detected";
-
 return;
-
 }
 
 }catch{}
@@ -473,16 +451,14 @@ let parts = text.split(/\s+/).filter(Boolean);
 
 if(parts.every(b => b.length === 8)){
 
-let decoded = parts.map(b => String.fromCharCode(parseInt(b,2))).join("");
+let decoded = parts.map(b =>
+String.fromCharCode(parseInt(b,2))
+).join("");
 
 if(printable(decoded)){
-
 lastDetected = "binary";
-
 out.innerText = "binary detected";
-
 return;
-
 }
 
 }
@@ -490,17 +466,12 @@ return;
 }
 
 if(/^[A-Za-z]+$/.test(text)){
-
 lastDetected = "caesar";
-
 out.innerText = "caesar/rot13 detected";
-
 return;
-
 }
 
 lastDetected = "unknown";
-
 out.innerText = "cipher not recognized";
 
 }
@@ -509,13 +480,11 @@ out.innerText = "cipher not recognized";
 window.decodeCipher = function(){
 
 let text = document.getElementById("cipher").value.trim();
-
 let result = "";
 
 if(lastDetected === "base64"){
 
 try{ result = atob(text); }
-
 catch { result = "invalid base64"; }
 
 }
@@ -523,34 +492,31 @@ catch { result = "invalid base64"; }
 else if(lastDetected === "hex"){
 
 for(let i=0;i<text.length;i+=2){
-
 result += String.fromCharCode(parseInt(text.substr(i,2),16));
-
 }
 
 }
 
 else if(lastDetected === "binary"){
 
-text.split(/\s+/).filter(Boolean).forEach(b => {
-
+text.split(/\s+/).filter(Boolean).forEach(b=>{
 result += String.fromCharCode(parseInt(b,2));
-
 });
 
 }
 
 else if(lastDetected === "caesar"){
 
-result = text.replace(/[A-Za-z]/g,c=>String.fromCharCode(c.charCodeAt(0)+(c.toUpperCase()<='M'?13:-13)));
+result = text.replace(/[A-Za-z]/g,c =>
+String.fromCharCode(c.charCodeAt(0)+(c.toUpperCase()<='M'?13:-13))
+);
 
 }
 
 else if(lastDetected === "url"){
 
-try { result = decodeURIComponent(text); }
-
-catch { result = "invalid url encoding"; }
+try{ result = decodeURIComponent(text); }
+catch{ result = "invalid url encoding"; }
 
 }
 
@@ -568,7 +534,6 @@ document.getElementById("outputCipher").innerText = result;
 window.imageMetadata = function(){
 
 const input = document.getElementById("imageInput");
-
 const file = input.files[0];
 
 if(!file) return;
@@ -578,9 +543,7 @@ EXIF.getData(file,function(){
 let allMeta = EXIF.getAllTags(this);
 
 if(allMeta.MakerNote && allMeta.MakerNote.length > 200){
-
 allMeta.MakerNote = "[MakerNote truncated]";
-
 }
 
 document.getElementById("outputImage").innerText =
