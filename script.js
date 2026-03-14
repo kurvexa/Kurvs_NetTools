@@ -4,16 +4,26 @@ function setLanguage(lang){
 
 document.querySelectorAll("[data-i18n]").forEach(el=>{
 const key = el.getAttribute("data-i18n");
-if(translations[lang] && translations[lang][key]){
-el.innerText = translations[lang][key];
-}
+
+const value =
+translations[lang]?.[key] ||
+translations["en"]?.[key] ||
+key;
+
+el.innerText = value;
+
 });
 
 document.querySelectorAll("[data-i18n-placeholder]").forEach(el=>{
 const key = el.getAttribute("data-i18n-placeholder");
-if(translations[lang] && translations[lang][key]){
-el.placeholder = translations[lang][key];
-}
+
+const value =
+translations[lang]?.[key] ||
+translations["en"]?.[key] ||
+key;
+
+el.placeholder = value;
+
 });
 
 localStorage.setItem("language", lang);
@@ -29,8 +39,13 @@ let rawRDAP = null;
 let showingRaw = false;
 let lastDetected = "";
 
-// ---------------- Load Saved Language ----------------
-const savedLang = localStorage.getItem("language") || "en";
+// ---------------- Load Language ----------------
+
+const browserLang = navigator.language.slice(0,2);
+
+const savedLang =
+localStorage.getItem("language") ||
+(translations[browserLang] ? browserLang : "en");
 
 const langSelect = document.getElementById("languageSelect");
 
@@ -40,7 +55,26 @@ langSelect.value = savedLang;
 
 setLanguage(savedLang);
 
+// ---------------- Enter Key Support ----------------
+
+function enterTrigger(id, func){
+const el = document.getElementById(id);
+if(!el) return;
+
+el.addEventListener("keypress", e=>{
+if(e.key === "Enter"){
+e.preventDefault();
+func();
+}
+});
+}
+
+enterTrigger("domain", whoisLookup);
+enterTrigger("dnsDomain", dnsLookup);
+enterTrigger("ip", ipLookup);
+
 // ---------------- Speaker Icon Easter Egg ----------------
+
 const speakerIcon = document.getElementById('speaker-icon');
 const speakerAudio = document.getElementById('speaker-audio');
 
@@ -62,6 +96,7 @@ speakerIcon.classList.remove('bouncing');
 }
 
 // ---------------- WHOIS / RDAP ----------------
+
 window.whoisLookup = async function() {
 
 showingRaw = false;
@@ -165,6 +200,7 @@ return "Not listed";
 }
 
 // ---------------- Toggle Raw RDAP ----------------
+
 window.toggleRaw = function() {
 
 if (!rawRDAP) return;
@@ -192,6 +228,7 @@ showingRaw = true;
 }
 
 // ---------------- DNS LOOKUP ----------------
+
 window.dnsLookup = async function() {
 
 let domain = document.getElementById("dnsDomain").value.trim();
@@ -260,13 +297,12 @@ output.innerText = "DNS lookup failed.";
 }
 
 // ---------------- IP LOOKUP ----------------
+
 const ipProviders = [
 
 {
 name: "ipwhois.app",
-
 url: ip => `https://ipwhois.app/json/${ip}`,
-
 parse: data =>
 `IP: ${data.ip}
 
@@ -280,14 +316,11 @@ Longitude: ${data.longitude}
 ISP: ${data.isp}
 Organization: ${data.org}
 ASN: ${data.asn}`
-
 },
 
 {
 name: "freeipapi.com",
-
 url: ip => `https://freeipapi.com/api/json/${ip}`,
-
 parse: data =>
 `IP: ${data.ipAddress}
 
@@ -299,14 +332,11 @@ Latitude: ${data.latitude}
 Longitude: ${data.longitude}
 
 ISP: ${data.operatorName}`
-
 },
 
 {
 name: "ipapi.is",
-
 url: ip => `https://api.ip-api.is/json/${ip}`,
-
 parse: data =>
 `IP: ${data.ip}
 
@@ -318,14 +348,11 @@ Latitude: ${data.location.latitude}
 Longitude: ${data.location.longitude}
 
 ISP: ${data.asn.org}`
-
 },
 
 {
 name: "ipapi.co",
-
 url: ip => `https://ipapi.co/${ip}/json/`,
-
 parse: data =>
 `IP: ${data.ip}
 
@@ -337,12 +364,12 @@ Latitude: ${data.latitude}
 Longitude: ${data.longitude}
 
 ISP: ${data.org}`
-
 }
 
 ];
 
 // ---------------- IP Lookup ----------------
+
 window.ipLookup = async function() {
 
 let ip = document.getElementById("ip").value.trim();
@@ -390,6 +417,7 @@ output.innerText = "all IP lookup providers failed.";
 }
 
 // ---------------- CIPHER DETECTION ----------------
+
 window.detectCipher = function(){
 
 const text = document.getElementById("cipher").value.trim();
@@ -467,7 +495,7 @@ return;
 
 if(/^[A-Za-z]+$/.test(text)){
 lastDetected = "caesar";
-out.innerText = "caesar/rot13 detected";
+out.innerText = "caesar/rot detected";
 return;
 }
 
@@ -476,7 +504,33 @@ out.innerText = "cipher not recognized";
 
 }
 
+// ---------------- Caesar Decoder ----------------
+
+function caesarDecode(text){
+  const printable = str => /^[\x09\x0A\x0D\x20-\x7E]*$/.test(str);
+
+  for(let shift=1; shift<26; shift++){
+    let decoded = '';
+    for(let c of text){
+      if(c >= 'A' && c <= 'Z'){
+        decoded += String.fromCharCode((c.charCodeAt(0)-65+26-shift)%26 +65);
+      }
+      else if(c >= 'a' && c <= 'z'){
+        decoded += String.fromCharCode((c.charCodeAt(0)-97+26-shift)%26 +97);
+      }
+      else{
+        decoded += c;
+      }
+    }
+    if(printable(decoded)){
+      return decoded + `  (shift ${shift})`;
+    }
+  }
+  return "unknown Caesar shift";
+}
+
 // ---------------- Decode ----------------
+
 window.decodeCipher = function(){
 
 let text = document.getElementById("cipher").value.trim();
@@ -507,9 +561,7 @@ result += String.fromCharCode(parseInt(b,2));
 
 else if(lastDetected === "caesar"){
 
-result = text.replace(/[A-Za-z]/g,c =>
-String.fromCharCode(c.charCodeAt(0)+(c.toUpperCase()<='M'?13:-13))
-);
+result = caesarDecode(text);
 
 }
 
@@ -531,6 +583,7 @@ document.getElementById("outputCipher").innerText = result;
 }
 
 // ---------------- IMAGE METADATA ----------------
+
 window.imageMetadata = function(){
 
 const input = document.getElementById("imageInput");
