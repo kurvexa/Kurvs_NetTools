@@ -5,51 +5,103 @@ let rawRDAP = null;
 let showingRaw = false;
 let lastDetected = "";
 
+// ---------------- Translation System ----------------
+function setLanguage(lang){
+
+document.querySelectorAll("[data-i18n]").forEach(el=>{
+const key = el.getAttribute("data-i18n");
+if(translations[lang] && translations[lang][key]){
+el.innerText = translations[lang][key];
+}
+});
+
+document.querySelectorAll("[data-i18n-placeholder]").forEach(el=>{
+const key = el.getAttribute("data-i18n-placeholder");
+if(translations[lang] && translations[lang][key]){
+el.placeholder = translations[lang][key];
+}
+});
+
+localStorage.setItem("language", lang);
+
+}
+
+window.setLanguage = setLanguage;
+
+const savedLang = localStorage.getItem("language") || "en";
+
+const langSelect = document.getElementById("languageSelect");
+if(langSelect){
+langSelect.value = savedLang;
+}
+
+setLanguage(savedLang);
+
 // ---------------- Speaker Icon Easter Egg ----------------
 const speakerIcon = document.getElementById('speaker-icon');
 const speakerAudio = document.getElementById('speaker-audio');
 
 if (speakerIcon && speakerAudio) {
-    speakerIcon.addEventListener('click', () => {
-        speakerIcon.classList.add('bouncing');
-        speakerAudio.currentTime = 0;
-        speakerAudio.play();
+speakerIcon.addEventListener('click', () => {
 
-        speakerAudio.onended = () => {
-            speakerIcon.classList.remove('bouncing');
-        };
-    });
+speakerIcon.classList.add('bouncing');
+
+speakerAudio.currentTime = 0;
+speakerAudio.play();
+
+speakerAudio.onended = () => {
+speakerIcon.classList.remove('bouncing');
+};
+
+});
 }
 
 // ---------------- WHOIS / RDAP ----------------
 window.whoisLookup = async function() {
-    showingRaw = false;
-    const toggleBtn = document.getElementById("toggleRawBtn");
-    if(toggleBtn) toggleBtn.innerText = "show raw data";
 
-    try {
-        let domain = document.getElementById("domain").value.trim();
-        domain = domain.replace(/^https?:\/\//i, "").split("/")[0];
+showingRaw = false;
 
-        if (!domain.includes(".")) {
-            document.getElementById("outputWhois").innerText = "invalid domain format.";
-            return;
-        }
+const toggleBtn = document.getElementById("toggleRawBtn");
+if(toggleBtn) toggleBtn.innerText = "show raw data";
 
-        let rdapResp = await fetch(`https://rdap.org/domain/${domain}`);
-        if (!rdapResp.ok) throw new Error("domain not found");
+try {
 
-        let data = await rdapResp.json();
-        rawRDAP = data;
+let domain = document.getElementById("domain").value.trim();
 
-        let registrar = data.entities?.[0]?.vcardArray?.[1]?.[1]?.[3] || "Unknown";
-        let created = data.events?.find(e => e.eventAction === "registration")?.eventDate || "Unknown";
-        let expires = data.events?.find(e => e.eventAction === "expiration")?.eventDate || "Unknown";
-        let nameservers = data.nameservers?.map(ns => ns.ldhName).join("\n") || "None";
+domain = domain.replace(/^https?:\/\//i, "").split("/")[0];
 
-        let abuseEmail = findAbuseEmail(data.entities || []);
+if (!domain.includes(".")) {
 
-        const output =
+document.getElementById("outputWhois").innerText =
+"invalid domain format.";
+
+return;
+
+}
+
+let rdapResp = await fetch(`https://rdap.org/domain/${domain}`);
+
+if (!rdapResp.ok) throw new Error("domain not found");
+
+let data = await rdapResp.json();
+
+rawRDAP = data;
+
+let registrar =
+data.entities?.[0]?.vcardArray?.[1]?.[1]?.[3] || "Unknown";
+
+let created =
+data.events?.find(e => e.eventAction === "registration")?.eventDate || "Unknown";
+
+let expires =
+data.events?.find(e => e.eventAction === "expiration")?.eventDate || "Unknown";
+
+let nameservers =
+data.nameservers?.map(ns => ns.ldhName).join("\n") || "None";
+
+let abuseEmail = findAbuseEmail(data.entities || []);
+
+const output =
 `Domain: ${data.ldhName}
 
 Registrar: ${registrar}
@@ -60,101 +112,164 @@ Abuse Contact: ${abuseEmail}
 Nameservers:
 ${nameservers}`;
 
-        document.getElementById("outputWhois").innerText = output;
+document.getElementById("outputWhois").innerText = output;
 
-    } catch (error) {
-        document.getElementById("outputWhois").innerText =
-        "lookup failed. domain may be unregistered.";
-    }
+}
+
+catch (error) {
+
+document.getElementById("outputWhois").innerText =
+"lookup failed. domain may be unregistered.";
+
+}
+
 }
 
 function findAbuseEmail(entities) {
-    for (let entity of entities) {
-        if (entity.roles && entity.roles.includes("abuse")) {
-            let vcard = entity.vcardArray;
-            if (vcard) {
-                for (let field of vcard[1]) {
-                    if (field[0] === "email") return field[3];
-                }
-            }
-        }
-        if (entity.entities) {
-            let result = findAbuseEmail(entity.entities);
-            if (result) return result;
-        }
-    }
-    return "Not listed";
+
+for (let entity of entities) {
+
+if (entity.roles && entity.roles.includes("abuse")) {
+
+let vcard = entity.vcardArray;
+
+if (vcard) {
+
+for (let field of vcard[1]) {
+
+if (field[0] === "email") return field[3];
+
+}
+
+}
+
+}
+
+if (entity.entities) {
+
+let result = findAbuseEmail(entity.entities);
+
+if (result) return result;
+
+}
+
+}
+
+return "Not listed";
+
 }
 
 window.toggleRaw = function() {
-    if (!rawRDAP) return;
-    const outputEl = document.getElementById("outputWhois");
-    const btn = document.getElementById("toggleRawBtn");
 
-    if (showingRaw) {
-        whoisLookup();
-        btn.innerText = "show raw data";
-        showingRaw = false;
-    } else {
-        outputEl.innerText = JSON.stringify(rawRDAP, null, 2);
-        btn.innerText = "show clean data";
-        showingRaw = true;
-    }
+if (!rawRDAP) return;
+
+const outputEl = document.getElementById("outputWhois");
+
+const btn = document.getElementById("toggleRawBtn");
+
+if (showingRaw) {
+
+whoisLookup();
+
+btn.innerText = "show raw data";
+
+showingRaw = false;
+
+}
+
+else {
+
+outputEl.innerText = JSON.stringify(rawRDAP, null, 2);
+
+btn.innerText = "show clean data";
+
+showingRaw = true;
+
+}
+
 }
 
 // ---------------- DNS LOOKUP ----------------
 window.dnsLookup = async function() {
-    let domain = document.getElementById("dnsDomain").value.trim();
-    let output = document.getElementById("outputDNS");
 
-    domain = domain.replace(/^https?:\/\//i, "").split("/")[0];
+let domain = document.getElementById("dnsDomain").value.trim();
 
-    if (!domain.includes(".")) {
-        output.innerText = "invalid domain.";
-        return;
-    }
+let output = document.getElementById("outputDNS");
 
-    const recordTypes = {
-        A:1,
-        AAAA:28,
-        MX:15,
-        NS:2,
-        TXT:16,
-        CNAME:5
-    };
+domain = domain.replace(/^https?:\/\//i, "").split("/")[0];
 
-    let results = `DOMAIN: ${domain}\n\n`;
+if (!domain.includes(".")) {
 
-    try {
-        for (const [name,type] of Object.entries(recordTypes)) {
-            let resp = await fetch(`https://dns.google/resolve?name=${domain}&type=${type}`);
-            let data = await resp.json();
+output.innerText = "invalid domain.";
 
-            if (data.Answer) {
-                results += `[${name}]\n`;
-                data.Answer.forEach(r=>{
-                    results += `${r.data}\n`;
-                });
-                results += "\n";
-            }
-        }
+return;
 
-        if (results === `DOMAIN: ${domain}\n\n`) {
-            results += "no DNS records found.";
-        }
-        output.innerText = results;
+}
 
-    } catch(err) {
-        output.innerText = "DNS lookup failed.";
-    }
+const recordTypes = {
+
+A:1,
+AAAA:28,
+MX:15,
+NS:2,
+TXT:16,
+CNAME:5
+
+};
+
+let results = `DOMAIN: ${domain}\n\n`;
+
+try {
+
+for (const [name,type] of Object.entries(recordTypes)) {
+
+let resp = await fetch(`https://dns.google/resolve?name=${domain}&type=${type}`);
+
+let data = await resp.json();
+
+if (data.Answer) {
+
+results += `[${name}]\n`;
+
+data.Answer.forEach(r=>{
+
+results += `${r.data}\n`;
+
+});
+
+results += "\n";
+
+}
+
+}
+
+if (results === `DOMAIN: ${domain}\n\n`) {
+
+results += "no DNS records found.";
+
+}
+
+output.innerText = results;
+
+}
+
+catch(err) {
+
+output.innerText = "DNS lookup failed.";
+
+}
+
 }
 
 // ---------------- IP LOOKUP ----------------
 const ipProviders = [
-    {
-        name: "ipwhois.app",
-        url: ip => `https://ipwhois.app/json/${ip}`,
-        parse: data =>
+
+{
+name: "ipwhois.app",
+
+url: ip => `https://ipwhois.app/json/${ip}`,
+
+parse: data =>
 `IP: ${data.ip}
 
 Country: ${data.country}
@@ -167,11 +282,15 @@ Longitude: ${data.longitude}
 ISP: ${data.isp}
 Organization: ${data.org}
 ASN: ${data.asn}`
-    },
-    {
-        name: "freeipapi.com",
-        url: ip => `https://freeipapi.com/api/json/${ip}`,
-        parse: data =>
+
+},
+
+{
+name: "freeipapi.com",
+
+url: ip => `https://freeipapi.com/api/json/${ip}`,
+
+parse: data =>
 `IP: ${data.ipAddress}
 
 Country: ${data.countryName}
@@ -182,11 +301,15 @@ Latitude: ${data.latitude}
 Longitude: ${data.longitude}
 
 ISP: ${data.operatorName}`
-    },
-    {
-        name: "ipapi.is",
-        url: ip => `https://api.ip-api.is/json/${ip}`,
-        parse: data =>
+
+},
+
+{
+name: "ipapi.is",
+
+url: ip => `https://api.ip-api.is/json/${ip}`,
+
+parse: data =>
 `IP: ${data.ip}
 
 Country: ${data.location.country}
@@ -197,11 +320,15 @@ Latitude: ${data.location.latitude}
 Longitude: ${data.location.longitude}
 
 ISP: ${data.asn.org}`
-    },
-    {
-        name: "ipapi.co",
-        url: ip => `https://ipapi.co/${ip}/json/`,
-        parse: data =>
+
+},
+
+{
+name: "ipapi.co",
+
+url: ip => `https://ipapi.co/${ip}/json/`,
+
+parse: data =>
 `IP: ${data.ip}
 
 Country: ${data.country_name}
@@ -212,142 +339,255 @@ Latitude: ${data.latitude}
 Longitude: ${data.longitude}
 
 ISP: ${data.org}`
-    }
+
+}
+
 ];
 
 window.ipLookup = async function() {
-    let ip = document.getElementById("ip").value.trim();
-    let output = document.getElementById("outputIP");
 
-    if(!ip){
-        output.innerText = "enter a valid IP";
-        return;
-    }
+let ip = document.getElementById("ip").value.trim();
 
-    for(let provider of ipProviders){
-        try{
-            output.innerText = `Querying ${provider.name}...`;
-            let response = await fetch(provider.url(ip));
+let output = document.getElementById("outputIP");
 
-            if(response.status === 429) throw new Error("RATE_LIMIT");
-            if(!response.ok) throw new Error("API_ERROR");
+if(!ip){
 
-            let data = await response.json();
-            output.innerText = provider.parse(data);
-            return;
+output.innerText = "enter a valid IP";
 
-        } catch(err) {
-            output.innerText = `${provider.name} failed. trying another provider...`;
-            await new Promise(r => setTimeout(r, 1200));
-        }
-    }
-    output.innerText = "all IP lookup providers failed.";
+return;
+
+}
+
+for(let provider of ipProviders){
+
+try{
+
+output.innerText = `Querying ${provider.name}...`;
+
+let response = await fetch(provider.url(ip));
+
+if(response.status === 429) throw new Error("RATE_LIMIT");
+
+if(!response.ok) throw new Error("API_ERROR");
+
+let data = await response.json();
+
+output.innerText = provider.parse(data);
+
+return;
+
+}
+
+catch(err) {
+
+output.innerText = `${provider.name} failed. trying another provider...`;
+
+await new Promise(r => setTimeout(r, 1200));
+
+}
+
+}
+
+output.innerText = "all IP lookup providers failed.";
+
 }
 
 // ---------------- CIPHER DETECTION ----------------
 window.detectCipher = function(){
-    const text = document.getElementById("cipher").value.trim();
-    const out = document.getElementById("outputCipher");
 
-    function printable(str){
-        return /^[\x09\x0A\x0D\x20-\x7E]*$/.test(str);
-    }
+const text = document.getElementById("cipher").value.trim();
 
-    if(/^[A-Za-z0-9+/]+={0,2}$/.test(text) && text.length % 4 === 0){
-        try{
-            let decoded = atob(text);
-            if(printable(decoded)){
-                lastDetected = "base64";
-                out.innerText = "base64 detected";
-                return;
-            }
-        }catch{}
-    }
+const out = document.getElementById("outputCipher");
 
-    if(/^[0-9A-Fa-f]+$/.test(text) && text.length % 2 === 0){
-        let decoded = "";
-        for(let i=0; i<text.length; i+=2){
-            decoded += String.fromCharCode(parseInt(text.substr(i,2), 16));
-        }
-        if(printable(decoded)){
-            lastDetected = "hex";
-            out.innerText = "hex detected";
-            return;
-        }
-    }
+function printable(str){
 
-    if(/%[0-9A-Fa-f]{2}/.test(text)){
-        try{
-            let decoded = decodeURIComponent(text);
-            if(printable(decoded)){
-                lastDetected = "url";
-                out.innerText = "url encoding detected";
-                return;
-            }
-        }catch{}
-    }
+return /^[\x09\x0A\x0D\x20-\x7E]*$/.test(str);
 
-    if(/^[01\s]+$/.test(text)){
-        let parts = text.split(/\s+/).filter(Boolean);
-        if(parts.every(b => b.length === 8)){
-            let decoded = parts.map(b => String.fromCharCode(parseInt(b, 2))).join("");
-            if(printable(decoded)){
-                lastDetected = "binary";
-                out.innerText = "binary detected";
-                return;
-            }
-        }
-    }
-
-    if(/^[A-Za-z]+$/.test(text)){
-        lastDetected = "caesar";
-        out.innerText = "caesar/rot13 detected"; // need to fix. doesnt work - don't know why
-        return;
-    }
-
-    lastDetected = "unknown";
-    out.innerText = "cipher not recognized";
 }
 
-window.decodeCipher = function(){
-    let text = document.getElementById("cipher").value.trim();
-    let result = "";
+if(/^[A-Za-z0-9+/]+={0,2}$/.test(text) && text.length % 4 === 0){
 
-    if(lastDetected === "base64"){
-        try{ result = atob(text); } catch { result = "invalid base64"; }
-    } else if(lastDetected === "hex"){
-        for(let i=0; i<text.length; i+=2){
-            result += String.fromCharCode(parseInt(text.substr(i,2), 16));
-        }
-    } else if(lastDetected === "binary"){
-        text.split(/\s+/).filter(Boolean).forEach(b => {
-            result += String.fromCharCode(parseInt(b, 2));
-        });
-    } else if(lastDetected === "caesar"){
-        result = text.replace(/[A-Za-z]/g, c =>
-            String.fromCharCode(c.charCodeAt(0) + (c.toUpperCase() <= 'M' ? 13 : -13))
-        );
-    } else if(lastDetected === "url"){
-        try { result = decodeURIComponent(text); } catch { result = "invalid url encoding"; }
-    } else {
-        result = "unknown cipher";
-    }
-    document.getElementById("outputCipher").innerText = result;
+try{
+
+let decoded = atob(text);
+
+if(printable(decoded)){
+
+lastDetected = "base64";
+
+out.innerText = "base64 detected";
+
+return;
+
+}
+
+}catch{}
+
+}
+
+if(/^[0-9A-Fa-f]+$/.test(text) && text.length % 2 === 0){
+
+let decoded = "";
+
+for(let i=0;i<text.length;i+=2){
+
+decoded += String.fromCharCode(parseInt(text.substr(i,2),16));
+
+}
+
+if(printable(decoded)){
+
+lastDetected = "hex";
+
+out.innerText = "hex detected";
+
+return;
+
+}
+
+}
+
+if(/%[0-9A-Fa-f]{2}/.test(text)){
+
+try{
+
+let decoded = decodeURIComponent(text);
+
+if(printable(decoded)){
+
+lastDetected = "url";
+
+out.innerText = "url encoding detected";
+
+return;
+
+}
+
+}catch{}
+
+}
+
+if(/^[01\s]+$/.test(text)){
+
+let parts = text.split(/\s+/).filter(Boolean);
+
+if(parts.every(b => b.length === 8)){
+
+let decoded = parts.map(b => String.fromCharCode(parseInt(b,2))).join("");
+
+if(printable(decoded)){
+
+lastDetected = "binary";
+
+out.innerText = "binary detected";
+
+return;
+
+}
+
+}
+
+}
+
+if(/^[A-Za-z]+$/.test(text)){
+
+lastDetected = "caesar";
+
+out.innerText = "caesar/rot13 detected";
+
+return;
+
+}
+
+lastDetected = "unknown";
+
+out.innerText = "cipher not recognized";
+
+}
+
+// ---------------- Decode ----------------
+window.decodeCipher = function(){
+
+let text = document.getElementById("cipher").value.trim();
+
+let result = "";
+
+if(lastDetected === "base64"){
+
+try{ result = atob(text); }
+
+catch { result = "invalid base64"; }
+
+}
+
+else if(lastDetected === "hex"){
+
+for(let i=0;i<text.length;i+=2){
+
+result += String.fromCharCode(parseInt(text.substr(i,2),16));
+
+}
+
+}
+
+else if(lastDetected === "binary"){
+
+text.split(/\s+/).filter(Boolean).forEach(b => {
+
+result += String.fromCharCode(parseInt(b,2));
+
+});
+
+}
+
+else if(lastDetected === "caesar"){
+
+result = text.replace(/[A-Za-z]/g,c=>String.fromCharCode(c.charCodeAt(0)+(c.toUpperCase()<='M'?13:-13)));
+
+}
+
+else if(lastDetected === "url"){
+
+try { result = decodeURIComponent(text); }
+
+catch { result = "invalid url encoding"; }
+
+}
+
+else{
+
+result = "unknown cipher";
+
+}
+
+document.getElementById("outputCipher").innerText = result;
+
 }
 
 // ---------------- IMAGE METADATA ----------------
 window.imageMetadata = function(){
-    const input = document.getElementById("imageInput");
-    const file = input.files[0];
-    if(!file) return;
 
-    EXIF.getData(file, function(){
-        let allMeta = EXIF.getAllTags(this);
-        if(allMeta.MakerNote && allMeta.MakerNote.length > 200){
-            allMeta.MakerNote = "[MakerNote truncated]";
-        }
-        document.getElementById("outputImage").innerText = JSON.stringify(allMeta, null, 2);
-    });
+const input = document.getElementById("imageInput");
+
+const file = input.files[0];
+
+if(!file) return;
+
+EXIF.getData(file,function(){
+
+let allMeta = EXIF.getAllTags(this);
+
+if(allMeta.MakerNote && allMeta.MakerNote.length > 200){
+
+allMeta.MakerNote = "[MakerNote truncated]";
+
+}
+
+document.getElementById("outputImage").innerText =
+JSON.stringify(allMeta,null,2);
+
+});
+
 }
 
 });
