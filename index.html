@@ -1,66 +1,111 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
-    <title>kurvexa's toolkit</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="icon" href="data:,">
+<meta charset="UTF-8">
+<title>kurvexa's toolkit</title>
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:,">
 
-    <!-- Library for EXIF reading -->
-    <script src="https://cdn.jsdelivr.net/npm/exif-js"></script>
+<!-- EXIF library -->
+<script src="https://cdn.jsdelivr.net/npm/exif-js"></script>
+
 </head>
 <body>
 
-<h1>kurvexa's toolkit</h1>
+<h1 data-i18n="title">kurvexa's toolkit</h1>
 
-<!-- WHOIS Lookup -->
-<div class="tool">
-    <h2>rdap lookup</h2>
-    <input id="domain" placeholder="example.com">
-    <button onclick="whoisLookup()">search</button>
-    <button id="toggleRawBtn" onclick="toggleRaw()">show raw data</button>
-    <pre id="outputWhois"></pre>
+<!-- LANGUAGE SELECTOR -->
+<div class="language-switch">
+<select id="languageSelect" onchange="setLanguage(this.value)">
+<option value="en">English</option>
+<option value="es">Español</option>
+<option value="fr">Français</option>
+<option value="de">Deutsch</option>
+<option value="ja">日本語</option>
+</select>
 </div>
 
-<!-- DNS Lookup -->
+<!-- WHOIS -->
 <div class="tool">
-    <h2>dns lookup</h2>
-    <input id="dnsDomain" placeholder="example.com">
-    <button onclick="dnsLookup()">search</button>
-    <pre id="outputDNS"></pre>
+<h2 data-i18n="rdap_title">rdap lookup</h2>
+
+<input id="domain" placeholder="example.com" data-i18n-placeholder="domain_placeholder">
+
+<button onclick="whoisLookup()" data-i18n="search">search</button>
+
+<button id="toggleRawBtn" onclick="toggleRaw()" data-i18n="raw">
+show raw data
+</button>
+
+<pre id="outputWhois"></pre>
 </div>
 
-<!-- IP Lookup -->
+<!-- DNS -->
 <div class="tool">
-    <h2>ipv4 & ipv6 lookup</h2>
-    <input id="ip" placeholder="8.8.8.8">
-    <button onclick="ipLookup()">search</button>
-    <pre id="outputIP"></pre>
+
+<h2 data-i18n="dns_title">dns lookup</h2>
+
+<input id="dnsDomain" placeholder="example.com" data-i18n-placeholder="domain_placeholder">
+
+<button onclick="dnsLookup()" data-i18n="search">search</button>
+
+<pre id="outputDNS"></pre>
+
 </div>
 
-<!-- Cipher Detector -->
+<!-- IP -->
 <div class="tool">
-    <h2>cipher detector</h2>
-    <textarea id="cipher" placeholder="paste encoded message"></textarea>
-    <br><br>
-    <button onclick="detectCipher()">detect</button>
-    <button onclick="decodeCipher()">decode</button>
-    <pre id="outputCipher"></pre>
+
+<h2 data-i18n="ip_title">ipv4 & ipv6 lookup</h2>
+
+<input id="ip" placeholder="8.8.8.8">
+
+<button onclick="ipLookup()" data-i18n="search">search</button>
+
+<pre id="outputIP"></pre>
+
 </div>
 
-<!-- Image Metadata Checker -->
+<!-- Cipher -->
 <div class="tool">
-    <h2>image metadata checker</h2>
-    <input type="file" id="imageInput" onchange="imageMetadata()">
-    <pre id="outputImage"></pre>
+
+<h2 data-i18n="cipher_title">cipher detector</h2>
+
+<textarea id="cipher" placeholder="paste encoded message" data-i18n-placeholder="cipher_placeholder"></textarea>
+
+<br><br>
+
+<button onclick="detectCipher()" data-i18n="detect">detect</button>
+
+<button onclick="decodeCipher()" data-i18n="decode">decode</button>
+
+<pre id="outputCipher"></pre>
+
+</div>
+
+<!-- Image Metadata -->
+
+<div class="tool">
+
+<h2 data-i18n="image_title">image metadata checker</h2>
+
+<input type="file" id="imageInput" onchange="imageMetadata()">
+
+<pre id="outputImage"></pre>
+
 </div>
 
 <!-- speaker boom boom -->
+
 <div id="speaker-container">
-  <img id="speaker-icon" src="jaydes.png" alt="speaker" />
-  <audio id="speaker-audio" src="lowlife.mp3"></audio>
+
+<img id="speaker-icon" src="jaydes.png" alt="speaker">
+
+<audio id="speaker-audio" src="lowlife.mp3"></audio>
+
 </div>
 
+<script src="translations.js"></script>
 <script src="script.js"></script>
 
 </body>
