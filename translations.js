@@ -61,7 +61,7 @@ cipher_placeholder: "verschlüsselte Nachricht einfügen"
 },
 ja: {
 title: "kurvexa ツールキット",
-rdap_title: "RDAP検索", Japanese
+rdap_title: "RDAP検索", 
 dns_title: "DNS検索",
 ip_title: "IPv4 と IPv6 検索",
 cipher_title: "暗号検出",
