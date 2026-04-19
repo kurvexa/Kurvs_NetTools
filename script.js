@@ -160,42 +160,133 @@ window.dnsLookup = async function(){
 // ---------------- IP LOOKUP ----------------
 const ipProviders = [
   {
-    name:"ipwhois.app",
-    url: ip=>`https://ipwhois.app/json/${ip}`,
-    parse: data=>`Source: ipwhois.app\nIP: ${data.ip}\nCountry: ${data.country}\nRegion: ${data.region}\nCity: ${data.city}\nISP: ${data.isp}\nASN: ${data.asn}`
+    name: "ipapi.co",
+    url: ip => `https://ipapi.co/${ip}/json/`,
+    parse: d => ({
+      source: "ipapi.co",
+      ip: d.ip,
+      country: d.country_name,
+      region: d.region,
+      city: d.city,
+      isp: d.org,
+      asn: d.asn
+    })
   },
   {
-    name:"freeipapi.com",
-    url: ip=>`https://freeipapi.com/api/json/${ip}`,
-    parse: data=>`Source: freeipapi.com\nIP: ${data.ipAddress}\nCountry: ${data.countryName}\nRegion: ${data.regionName}\nCity: ${data.cityName}\nISP: ${data.operatorName}`
+    name: "ipinfo.io",
+    url: ip => `https://ipinfo.io/${ip}/json?token=69cc5e234f44b1`,
+    parse: d => ({
+      source: "ipinfo.io",
+      ip: d.ip,
+      country: d.country,
+      region: d.region,
+      city: d.city,
+      isp: d.org,
+      asn: d.asn
+    })
   },
   {
-    name:"ipapi.co",
-    url: ip=>`https://ipapi.co/${ip}/json/`,
-    parse: data=>`Source: ipapi.co\nIP: ${data.ip}\nCountry: ${data.country_name}\nRegion: ${data.region}\nCity: ${data.city}\nISP: ${data.org}`
+    name: "geojs.io",
+    url: ip => `https://get.geojs.io/v1/ip/geo/${ip}.json`,
+    parse: d => ({
+      source: "geojs.io",
+      ip: d.ip,
+      country: d.country,
+      region: d.region,
+      city: d.city,
+      isp: d.organization_name,
+      asn: d.asn
+    })
+  },
+  {
+    name: "geoplugin.net",
+    url: ip => `https://www.geoplugin.net/json.gp?ip=${ip}`,
+    parse: d => ({
+      source: "geoplugin.net",
+      ip: d.geoplugin_request,
+      country: d.geoplugin_countryName,
+      region: d.geoplugin_region,
+      city: d.geoplugin_city,
+      isp: null,
+      asn: null
+    })
+  },
+
+  //  will likely fail in browser cus of cors
+  {
+    name: "ipwhois.app",
+    url: ip => `https://ipwhois.app/json/${ip}`,
+    parse: d => ({
+      source: "ipwhois.app",
+      ip: d.ip,
+      country: d.country,
+      region: d.region,
+      city: d.city,
+      isp: d.isp,
+      asn: d.asn
+    })
+  },
+  {
+    name: "freeipapi.com",
+    url: ip => `https://freeipapi.com/api/json/${ip}`,
+    parse: d => ({
+      source: "freeipapi.com",
+      ip: d.ipAddress,
+      country: d.countryName,
+      region: d.regionName,
+      city: d.cityName,
+      isp: d.operatorName,
+      asn: d.asn
+    })
   }
 ];
 
-window.ipLookup = async function(){
+window.ipLookup = async function () {
   const ip = document.getElementById("ip").value.trim();
   const output = document.getElementById("outputIP");
-  if(!ip){ output.innerText="enter a valid IP"; return; }
 
-  for(const provider of ipProviders){
-    try{
+  if (!ip) {
+    output.innerText = "enter a valid IP";
+    return;
+  }
+
+  for (const provider of ipProviders) {
+    try {
       output.innerText = `Querying ${provider.name}...`;
-      const resp = await fetch(provider.url(ip));
-      if(!resp.ok) throw new Error();
+
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 3000);
+
+      const resp = await fetch(provider.url(ip), {
+        signal: controller.signal
+      });
+
+      clearTimeout(timeout);
+
+      if (!resp.ok) throw new Error();
+
       const data = await resp.json();
-      output.innerText = provider.parse(data);
+      const parsed = provider.parse(data);
+
+      output.innerText =
+        `Source: ${parsed.source}\n` +
+        `IP: ${parsed.ip}\n` +
+        `Country: ${parsed.country}\n` +
+        `Region: ${parsed.region}\n` +
+        `City: ${parsed.city}\n` +
+        `ISP: ${parsed.isp || "N/A"}\n` +
+        `ASN: ${parsed.asn || "N/A"}`;
+
       return;
-    }catch(err){
+
+    } catch (err) {
       output.innerText = `${provider.name} failed. trying another...`;
-      await new Promise(r=>setTimeout(r,500));
+      await new Promise(r => setTimeout(r, 300));
     }
   }
+
   output.innerText = "all IP lookup providers failed.";
-}
+};
 
 // ---------------- CIPHER DETECTION ----------------
 window.detectCipher = function(){
