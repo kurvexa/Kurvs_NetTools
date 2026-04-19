@@ -2,7 +2,8 @@
 function setLanguage(lang){
   document.querySelectorAll("[data-i18n]").forEach(el=>{
     const key = el.getAttribute("data-i18n");
-    const value = translations[lang]?.[key] || translations["en"]?.[key] || key;
+    const value = (translations[lang] && translations[lang][key]) || 
+    (translations["en"] && translations["en"][key]) || key;
     el.innerText = value;
   });
 
