@@ -1,7 +1,5 @@
 // ---------------- TRANSLATIONS & LANGUAGE ----------------
-
 function setLanguage(lang){
-
   document.querySelectorAll("[data-i18n]").forEach(el=>{
     const key = el.getAttribute("data-i18n");
     const value = translations[lang]?.[key] || translations["en"]?.[key] || key;
@@ -15,7 +13,6 @@ function setLanguage(lang){
   });
 
   localStorage.setItem("language", lang);
-
 }
 
 // ---------------- GLOBAL VARIABLES ----------------
@@ -23,22 +20,18 @@ let rawRDAP = null;
 let showingRaw = false;
 let lastDetected = "";
 
-// ---------------- EVENT LISTENERS ON DOM CONTENT ----------------
+// ---------------- EVENT LISTENERS ----------------
 document.addEventListener("DOMContentLoaded", () => {
-
-  // Load language
   const browserLang = navigator.language.slice(0,2);
   const savedLang = localStorage.getItem("language") || (translations[browserLang] ? browserLang : "en");
   const langSelect = document.getElementById("languageSelect");
   if(langSelect) langSelect.value = savedLang;
   setLanguage(savedLang);
 
-  // Enter key triggers
   enterTrigger("domain", whoisLookup);
   enterTrigger("dnsDomain", dnsLookup);
   enterTrigger("ip", ipLookup);
 
-  // Speaker Easter Egg
   const speakerIcon = document.getElementById('speaker-icon');
   const speakerAudio = document.getElementById('speaker-audio');
   if(speakerIcon && speakerAudio){
@@ -49,10 +42,8 @@ document.addEventListener("DOMContentLoaded", () => {
       speakerAudio.onended = () => speakerIcon.classList.remove('bouncing');
     });
   }
-
 });
 
-// ---------------- ENTER KEY TRIGGER ----------------
 function enterTrigger(id, func){
   const el = document.getElementById(id);
   if(!el) return;
@@ -63,14 +54,13 @@ function enterTrigger(id, func){
 
 // ---------------- WHOIS / RDAP ----------------
 window.whoisLookup = async function() {
-
   showingRaw = false;
   const toggleBtn = document.getElementById("toggleRawBtn");
-  if(toggleBtn) toggleBtn.innerText = "show raw data";
+  if(toggleBtn) toggleBtn.innerText = translations[localStorage.getItem("language")]?.raw || "show raw data";
 
   try{
     let domain = document.getElementById("domain").value.trim();
-    domain = domain.replace(/^https?:\/\//i, "").split("/")[0];
+    domain = domain.replace(/^https?:\/\//i, "").split("/");
     if(!domain.includes(".")){
       document.getElementById("outputWhois").innerText = "invalid domain format.";
       return;
@@ -82,29 +72,18 @@ window.whoisLookup = async function() {
     const data = await rdapResp.json();
     rawRDAP = data;
 
-    const registrar = data.entities?.[0]?.vcardArray?.[1]?.[1]?.[3] || "Unknown";
+    const registrar = data.entities?.?.vcardArray?.?.?. || "Unknown";
     const created = data.events?.find(e => e.eventAction === "registration")?.eventDate || "Unknown";
     const expires = data.events?.find(e => e.eventAction === "expiration")?.eventDate || "Unknown";
     const nameservers = data.nameservers?.map(ns => ns.ldhName).join("\n") || "None";
     const abuseEmail = findAbuseEmail(data.entities || []);
 
-    const output =
-`Domain: ${data.ldhName}
-
-Registrar: ${registrar}
-Created: ${created}
-Expires: ${expires}
-Abuse Contact: ${abuseEmail}
-
-Nameservers:
-${nameservers}`;
-
+    const output = `Domain: ${data.ldhName}\n\nRegistrar: ${registrar}\nCreated: ${created}\nExpires: ${expires}\nAbuse Contact: ${abuseEmail}\n\nNameservers:\n${nameservers}`;
     document.getElementById("outputWhois").innerText = output;
 
   }catch(error){
     document.getElementById("outputWhois").innerText = "lookup failed. domain may be unregistered.";
   }
-
 }
 
 function findAbuseEmail(entities){
@@ -112,8 +91,8 @@ function findAbuseEmail(entities){
     if(entity.roles && entity.roles.includes("abuse")){
       const vcard = entity.vcardArray;
       if(vcard){
-        for(const field of vcard[1]){
-          if(field[0] === "email") return field[3];
+        for(const field of vcard){
+          if(field === "email") return field;
         }
       }
     }
@@ -125,19 +104,19 @@ function findAbuseEmail(entities){
   return "Not listed";
 }
 
-// ---------------- TOGGLE RAW RDAP ----------------
 window.toggleRaw = function(){
   if(!rawRDAP) return;
   const outputEl = document.getElementById("outputWhois");
   const btn = document.getElementById("toggleRawBtn");
+  const lang = localStorage.getItem("language");
 
   if(showingRaw){
     whoisLookup();
-    btn.innerText = "show raw data";
+    btn.innerText = translations[lang]?.raw || "show raw data";
     showingRaw = false;
   } else {
     outputEl.innerText = JSON.stringify(rawRDAP,null,2);
-    btn.innerText = "show clean data";
+    btn.innerText = translations[lang]?.clean || "show clean data";
     showingRaw = true;
   }
 }
@@ -146,7 +125,7 @@ window.toggleRaw = function(){
 window.dnsLookup = async function(){
   let domain = document.getElementById("dnsDomain").value.trim();
   const output = document.getElementById("outputDNS");
-  domain = domain.replace(/^https?:\/\//i, "").split("/")[0];
+  domain = domain.replace(/^https?:\/\//i, "").split("/");
   if(!domain.includes(".")){ output.innerText = "invalid domain."; return; }
 
   const recordTypes = {A:1,AAAA:28,MX:15,NS:2,TXT:16,CNAME:5};
@@ -174,22 +153,17 @@ const ipProviders = [
   {
     name:"ipwhois.app",
     url: ip=>`https://ipwhois.app/json/${ip}`,
-    parse: data=>`IP: ${data.ip}\nCountry: ${data.country}\nRegion: ${data.region}\nCity: ${data.city}\nLatitude: ${data.latitude}\nLongitude: ${data.longitude}\nISP: ${data.isp}\nOrganization: ${data.org}\nASN: ${data.asn}`
+    parse: data=>`Source: ipwhois.app\nIP: ${data.ip}\nCountry: ${data.country}\nRegion: ${data.region}\nCity: ${data.city}\nISP: ${data.isp}\nASN: ${data.asn}`
   },
   {
     name:"freeipapi.com",
     url: ip=>`https://freeipapi.com/api/json/${ip}`,
-    parse: data=>`IP: ${data.ipAddress}\nCountry: ${data.countryName}\nRegion: ${data.regionName}\nCity: ${data.cityName}\nLatitude: ${data.latitude}\nLongitude: ${data.longitude}\nISP: ${data.operatorName}`
-  },
-  {
-    name:"ipapi.is",
-    url: ip=>`https://api.ip-api.is/json/${ip}`,
-    parse: data=>`IP: ${data.ip}\nCountry: ${data.location.country}\nRegion: ${data.location.state}\nCity: ${data.location.city}\nLatitude: ${data.location.latitude}\nLongitude: ${data.location.longitude}\nISP: ${data.asn.org}`
+    parse: data=>`Source: freeipapi.com\nIP: ${data.ipAddress}\nCountry: ${data.countryName}\nRegion: ${data.regionName}\nCity: ${data.cityName}\nISP: ${data.operatorName}`
   },
   {
     name:"ipapi.co",
     url: ip=>`https://ipapi.co/${ip}/json/`,
-    parse: data=>`IP: ${data.ip}\nCountry: ${data.country_name}\nRegion: ${data.region}\nCity: ${data.city}\nLatitude: ${data.latitude}\nLongitude: ${data.longitude}\nISP: ${data.org}`
+    parse: data=>`Source: ipapi.co\nIP: ${data.ip}\nCountry: ${data.country_name}\nRegion: ${data.region}\nCity: ${data.city}\nISP: ${data.org}`
   }
 ];
 
@@ -202,14 +176,13 @@ window.ipLookup = async function(){
     try{
       output.innerText = `Querying ${provider.name}...`;
       const resp = await fetch(provider.url(ip));
-      if(resp.status === 429) throw new Error("RATE_LIMIT");
-      if(!resp.ok) throw new Error("API_ERROR");
+      if(!resp.ok) throw new Error();
       const data = await resp.json();
       output.innerText = provider.parse(data);
       return;
     }catch(err){
-      output.innerText = `${provider.name} failed. trying another provider...`;
-      await new Promise(r=>setTimeout(r,1200));
+      output.innerText = `${provider.name} failed. trying another...`;
+      await new Promise(r=>setTimeout(r,500));
     }
   }
   output.innerText = "all IP lookup providers failed.";
@@ -220,49 +193,56 @@ window.detectCipher = function(){
   const text = document.getElementById("cipher").value.trim();
   const out = document.getElementById("outputCipher");
   const printable = str => /^[\x09\x0A\x0D\x20-\x7E]*$/.test(str);
+  
+  // Logic Fix: Avoid false positives on plain English
+  const commonWords = /\b(the|and|this|that|with|from|have|they|would|there|what)\b/i;
+  if(commonWords.test(text)) {
+      lastDetected = "none";
+      out.innerText = "Plaintext detected (contains common words, may be inaccurate. WIP, please contact original artist (@kurvexa) if wrong)";
+      return;
+  }
 
-  if(/^[A-Za-z0-9+/]+={0,2}$/.test(text) && text.length%4===0){
+  if(/^[A-Za-z0-9+/]+={0,2}$/.test(text) && text.length % 4 === 0 && text.length > 4){
     try{ let decoded=atob(text); if(printable(decoded)){lastDetected="base64"; out.innerText="base64 detected"; return;} }catch{}
   }
 
-  if(/^[0-9A-Fa-f]+$/.test(text) && text.length%2===0){
-    let decoded=""; for(let i=0;i<text.length;i+=2) decoded+=String.fromCharCode(parseInt(text.substr(i,2),16));
-    if(printable(decoded)){ lastDetected="hex"; out.innerText="hex detected"; return; }
+  if(/^[0-9A-Fa-f]+$/.test(text) && text.length % 2 === 0 && text.length > 4){
+    lastDetected="hex"; out.innerText="hex detected"; return;
   }
 
   if(/%[0-9A-Fa-f]{2}/.test(text)){
-    try{ let decoded=decodeURIComponent(text); if(printable(decoded)){ lastDetected="url"; out.innerText="url encoding detected"; return; } }catch{}
+    lastDetected="url"; out.innerText="url encoding detected"; return;
   }
 
-  if(/^[01\s]+$/.test(text)){
-    const parts=text.split(/\s+/).filter(Boolean);
-    if(parts.every(b=>b.length===8)){
-      const decoded=parts.map(b=>String.fromCharCode(parseInt(b,2))).join("");
-      if(printable(decoded)){ lastDetected="binary"; out.innerText="binary detected"; return; }
-    }
+  if(/^[01\s]+$/.test(text) && text.length > 7){
+    lastDetected="binary"; out.innerText="binary detected"; return;
   }
 
-  if(/^[A-Za-z]+$/.test(text)){ lastDetected="caesar"; out.innerText="caesar/rot detected"; return; }
+  if(/^[A-Za-z\s.,!?]+$/.test(text) && text.length > 3){ 
+      lastDetected="caesar"; out.innerText="caesar/rot detected"; return; 
+  }
 
   lastDetected="unknown"; out.innerText="cipher not recognized";
 }
 
-// ---------------- CAESAR DECODER ----------------
 function caesarDecode(text){
-  const printable = str => /^[\x09\x0A\x0D\x20-\x7E]*$/.test(str);
+  let results = "";
   for(let shift=1; shift<26; shift++){
     let decoded="";
     for(let c of text){
-      if(c>='A' && c<='Z') decoded=decoded+String.fromCharCode((c.charCodeAt(0)-65+26-shift)%26+65);
-      else if(c>='a' && c<='z') decoded=decoded+String.fromCharCode((c.charCodeAt(0)-97+26-shift)%26+97);
+      if(c>='A' && c<='Z') decoded+=String.fromCharCode((c.charCodeAt(0)-65+26-shift)%26+65);
+      else if(c>='a' && c<='z') decoded+=String.fromCharCode((c.charCodeAt(0)-97+26-shift)%26+97);
       else decoded+=c;
     }
-    if(printable(decoded)) return decoded+`  (shift ${shift})`;
+    // Only show shifts that look like English
+    if(/\b(the|and|is|at|of|to|in)\b/i.test(decoded)){
+        return decoded + ` (Shift ${shift})`;
+    }
+    results = "No common English words found in any shift.";
   }
-  return "unknown Caesar shift";
+  return results;
 }
 
-// ---------------- DECODE ----------------
 window.decodeCipher=function(){
   const text=document.getElementById("cipher").value.trim();
   let result="";
@@ -271,15 +251,15 @@ window.decodeCipher=function(){
   else if(lastDetected==="binary"){ text.split(/\s+/).filter(Boolean).forEach(b=>result+=String.fromCharCode(parseInt(b,2))); }
   else if(lastDetected==="caesar"){ result=caesarDecode(text); }
   else if(lastDetected==="url"){ try{result=decodeURIComponent(text);}catch{result="invalid url encoding";} }
-  else result="unknown cipher";
+  else result="unknown cipher or plaintext";
   document.getElementById("outputCipher").innerText=result;
 }
 
 // ---------------- IMAGE METADATA ----------------
 window.imageMetadata = function(){
   const input = document.getElementById("imageInput");
-  if(!input.files[0]) return;
-  EXIF.getData(input.files[0], function(){
+  if(!input.files) return;
+  EXIF.getData(input.files, function(){
     let allMeta=EXIF.getAllTags(this);
     if(allMeta.MakerNote && allMeta.MakerNote.length>200) allMeta.MakerNote="[MakerNote truncated]";
     document.getElementById("outputImage").innerText=JSON.stringify(allMeta,null,2);
