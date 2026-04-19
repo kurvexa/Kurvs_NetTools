@@ -1,19 +1,23 @@
-// ---------------- TRANSLATIONS & LANGUAGE ----------------
-function setLanguage(lang){
-  document.querySelectorAll("[data-i18n]").forEach(el=>{
-    const key = el.getAttribute("data-i18n");
-    const value = (translations[lang] && translations[lang][key]) || 
-    (translations["en"] && translations["en"][key]) || key;
-    el.innerText = value;
-  });
+// Replacement for the setLanguage function
+function setLanguage(lang) {
+    // Standard safety check instead of translations[lang]?.
+    var langData = translations[lang];
+    if (!langData) langData = translations["en"];
 
-  document.querySelectorAll("[data-i18n-placeholder]").forEach(el=>{
-    const key = el.getAttribute("data-i18n-placeholder");
-    const value = translations[lang]?.[key] || translations["en"]?.[key] || key;
-    el.placeholder = value;
-  });
+    document.querySelectorAll("[data-i18n]").forEach(function(el) {
+        var key = el.getAttribute("data-i18n");
+        // Standard check instead of langData?.[key]
+        var value = (langData && langData[key]) ? langData[key] : key;
+        el.innerText = value;
+    });
 
-  localStorage.setItem("language", lang);
+    document.querySelectorAll("[data-i18n-placeholder]").forEach(function(el) {
+        var key = el.getAttribute("data-i18n-placeholder");
+        var value = (langData && langData[key]) ? langData[key] : key;
+        el.placeholder = value;
+    });
+
+    localStorage.setItem("language", lang);
 }
 
 // ---------------- GLOBAL VARIABLES ----------------
