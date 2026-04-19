@@ -1,5 +1,4 @@
 const translations = {
-
 en: {
 title: "kurvexa's toolkit",
 rdap_title: "rdap lookup",
@@ -11,10 +10,10 @@ search: "search",
 detect: "detect",
 decode: "decode",
 raw: "show raw data",
+clean: "show clean data",
 domain_placeholder: "example.com",
 cipher_placeholder: "paste encoded message"
 },
-
 es: {
 title: "kit de herramientas de kurvexa",
 rdap_title: "búsqueda RDAP",
@@ -26,10 +25,10 @@ search: "buscar",
 detect: "detectar",
 decode: "decodificar",
 raw: "mostrar datos sin procesar",
+clean: "mostrar datos limpios",
 domain_placeholder: "ejemplo.com",
 cipher_placeholder: "pegar mensaje codificado"
 },
-
 fr: {
 title: "boîte à outils de kurvexa",
 rdap_title: "recherche RDAP",
@@ -41,10 +40,10 @@ search: "chercher",
 detect: "détecter",
 decode: "décoder",
 raw: "afficher les données brutes",
+clean: "afficher les données propres",
 domain_placeholder: "exemple.com",
 cipher_placeholder: "coller le message encodé"
 },
-
 de: {
 title: "kurvexa Werkzeugkasten",
 rdap_title: "RDAP-Suche",
@@ -56,13 +55,13 @@ search: "Suchen",
 detect: "Erkennen",
 decode: "Entschlüsseln",
 raw: "Rohdaten anzeigen",
+clean: "Saubere Daten anzeigen",
 domain_placeholder: "beispiel.com",
 cipher_placeholder: "verschlüsselte Nachricht einfügen"
 },
-
 ja: {
 title: "kurvexa ツールキット",
-rdap_title: "RDAP検索",
+rdap_title: "RDAP検索", Japanese
 dns_title: "DNS検索",
 ip_title: "IPv4 と IPv6 検索",
 cipher_title: "暗号検出",
@@ -71,10 +70,10 @@ search: "検索",
 detect: "検出",
 decode: "解読",
 raw: "生データ表示",
+clean: "クリーンデータ表示",
 domain_placeholder: "example.com",
 cipher_placeholder: "暗号メッセージを貼り付け"
 },
-
 ru: {
 title: "инструментарий kurvexa",
 rdap_title: "RDAP поиск",
@@ -86,9 +85,8 @@ search: "поиск",
 detect: "обнаружить",
 decode: "расшифровать",
 raw: "показать сырые данные",
+clean: "показать чистые данные",
 domain_placeholder: "example.com",
 cipher_placeholder: "вставьте зашифрованное сообщение"
 }
-
 };
-
