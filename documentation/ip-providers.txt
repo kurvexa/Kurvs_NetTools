@@ -1,16 +1,12 @@
 These are all IP providers used in the script.js file. 
 Each provider acts as a fallback for the others, ensuring the script can still return results even if one service is unavailable or rate‑limited.
 
-// 🟩 Working 🟩 // 
-ipapi.co (STATUS: Working)
 
-// 🟥 Not Working 🟥 //
-ipapi.is (STATUS: Not working)
-ipwhois.app (STATUS: Not working)
-freeipapi.com (STATUS: Not working)
+  "https://ipapi.co/json",
+  "https://ipinfo.io/json?token=69cc5e234f44b1",
+  "https://get.geojs.io/v1/ip/geo.json",
+  "https://www.geoplugin.net/json.gp"
 
 
-Last Updated: 11:40 AM (PST) 
-              3/13/2026
 
 
