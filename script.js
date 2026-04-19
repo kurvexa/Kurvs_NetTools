@@ -76,8 +76,12 @@ window.whoisLookup = async function() {
 
     const data = await rdapResp.json();
     rawRDAP = data;
-
-    const registrar = data.entities?.?.vcardArray?.?.?. || "Unknown";
+// might not work WIP
+    var registrar = "Unknown";
+if (data.entities && data.entities && data.entities.vcardArray) {
+    registrar = data.entities.vcardArray || "Unknown";
+}
+// might not work WIP
     const created = data.events?.find(e => e.eventAction === "registration")?.eventDate || "Unknown";
     const expires = data.events?.find(e => e.eventAction === "expiration")?.eventDate || "Unknown";
     const nameservers = data.nameservers?.map(ns => ns.ldhName).join("\n") || "None";
